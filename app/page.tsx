@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { LanguageToggle } from "@/components/language-toggle";
 import {
   Globe2,
   ArrowRight,
@@ -31,6 +35,8 @@ import {
 } from "lucide-react";
 
 export default function LandingPage() {
+  const t = useTranslations("landing");
+
   return (
     <div className="min-h-screen bg-white font-sans">
       {/* ── NAV ───────────────────────────────────────────────── */}
@@ -45,10 +51,10 @@ export default function LandingPage() {
 
           <nav className="hidden md:flex items-center gap-8">
             {[
-              ["Como funciona", "#como-funciona"],
-              ["Segmentos", "#segmentos"],
-              ["Preços", "/planos"],
-              ["Blog", "#"],
+              [t("nav.howItWorks"), "#como-funciona"],
+              [t("nav.segments"), "#segmentos"],
+              [t("nav.pricing"), "/planos"],
+              [t("nav.blog"), "#"],
             ].map(([label, href]) => (
               <a
                 key={label}
@@ -61,17 +67,18 @@ export default function LandingPage() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <LanguageToggle variant="light" />
             <Link
               href="/login"
               className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
-              Entrar
+              {t("nav.login")}
             </Link>
             <Link
               href="/cadastro"
               className="text-sm font-semibold px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all shadow-lg shadow-blue-600/20"
             >
-              Começar grátis
+              {t("nav.cta")}
             </Link>
           </div>
         </div>
@@ -95,22 +102,20 @@ export default function LandingPage() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-500/10 border border-blue-400/20 rounded-full text-blue-300 text-sm font-medium mb-8">
             <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
-            Plataforma de cobrança internacional para o mercado brasileiro
+            {t("hero.badge")}
           </div>
 
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.08] tracking-tight mb-6">
-            Você tem dinheiro a{" "}
+            {t("hero.headline1")}{" "}
             <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-              receber no Brasil.
+              {t("hero.headline2")}
             </span>
             <br />
-            Nós cobramos por você.
+            {t("hero.headline3")}
           </h1>
 
           <p className="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
-            Somos o braço legal de credores estrangeiros no Brasil — combinamos régua de cobrança
-            automatizada, negativação no Serasa, protesto em cartório e inteligência artificial para
-            recuperar o que é seu.
+            {t("hero.sub")}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
@@ -118,7 +123,7 @@ export default function LandingPage() {
               href="/cadastro"
               className="flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-base rounded-2xl transition-all shadow-2xl shadow-blue-600/40 group"
             >
-              Começar agora — grátis
+              {t("hero.cta1")}
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
@@ -126,16 +131,16 @@ export default function LandingPage() {
               className="flex items-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/15 text-white font-semibold text-base rounded-2xl border border-white/20 transition-all backdrop-blur-sm"
             >
               <Play className="w-4 h-4" />
-              Ver demo
+              {t("hero.cta2")}
             </Link>
           </div>
 
           {/* Social proof numbers */}
           <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-10 border-t border-white/10">
             {[
-              { value: "R$ 50M+", label: "em cobranças gerenciadas" },
-              { value: "68%", label: "taxa média de recuperação" },
-              { value: "200+", label: "credores internacionais" },
+              { value: t("hero.stat1value"), label: t("hero.stat1label") },
+              { value: t("hero.stat2value"), label: t("hero.stat2label") },
+              { value: t("hero.stat3value"), label: t("hero.stat3label") },
             ].map(({ value, label }) => (
               <div key={label} className="text-center">
                 <p className="text-3xl font-bold text-white">{value}</p>
@@ -151,15 +156,10 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-14">
             <p className="text-blue-600 font-semibold text-sm uppercase tracking-widest mb-3">
-              O problema
+              {t("problem.badge")}
             </p>
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">
-              Credor estrangeiro no Brasil fica impotente
-            </h2>
-            <p className="text-slate-500 text-lg max-w-xl mx-auto">
-              Sem presença local, sem CPF/CNPJ, sem advogado brasileiro — você não tem como usar
-              as ferramentas que realmente pressionam um devedor no Brasil.
-            </p>
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">{t("problem.title")}</h2>
+            <p className="text-slate-500 text-lg max-w-xl mx-auto">{t("problem.sub")}</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
@@ -168,22 +168,22 @@ export default function LandingPage() {
                 icon: ShieldX,
                 color: "bg-red-50 text-red-600",
                 border: "border-red-100",
-                title: "Sem negativação no Serasa",
-                desc: "Apenas empresas com CNPJ brasileiro podem incluir devedores nos bureaus de crédito. Seu nome, por mais que seja legítimo, não gera pressão alguma sobre o devedor brasileiro.",
+                title: t("problem.card1title"),
+                desc: t("problem.card1desc"),
               },
               {
                 icon: Gavel,
                 color: "bg-orange-50 text-orange-600",
                 border: "border-orange-100",
-                title: "Sem protesto em cartório",
-                desc: "O protesto de títulos no Brasil exige representante legal local. Sem ele, você não consegue registrar a inadimplência em cartório — e o devedor sabe disso.",
+                title: t("problem.card2title"),
+                desc: t("problem.card2desc"),
               },
               {
                 icon: Building2,
                 color: "bg-amber-50 text-amber-600",
                 border: "border-amber-100",
-                title: "Sem ação judicial viável",
-                desc: "Entrar com uma ação judicial no Brasil como credor estrangeiro custa caro, demora anos e exige caução. Na prática, é inviável para a maioria dos créditos.",
+                title: t("problem.card3title"),
+                desc: t("problem.card3desc"),
               },
             ].map(({ icon: Icon, color, border, title, desc }) => (
               <div
@@ -206,49 +206,20 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-blue-600 font-semibold text-sm uppercase tracking-widest mb-3">
-              A solução
+              {t("solution.badge")}
             </p>
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">
-              Como a CrossCollect funciona
-            </h2>
-            <p className="text-slate-500 text-lg max-w-xl mx-auto">
-              Em 4 passos, transformamos seu crédito internacional em pagamento real.
-            </p>
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">{t("solution.title")}</h2>
+            <p className="text-slate-500 text-lg max-w-xl mx-auto">{t("solution.sub")}</p>
           </div>
 
           <div className="grid md:grid-cols-4 gap-0 relative">
-            {/* Connector line */}
             <div className="hidden md:block absolute top-10 left-[12.5%] right-[12.5%] h-0.5 bg-gradient-to-r from-blue-200 via-blue-400 to-blue-200" />
 
             {[
-              {
-                step: "01",
-                icon: FileText,
-                color: "bg-blue-600",
-                title: "Cadastra a dívida",
-                desc: "Em 4 passos você registra o devedor, o valor em moeda estrangeira e a documentação comprobatória.",
-              },
-              {
-                step: "02",
-                icon: Bell,
-                color: "bg-indigo-600",
-                title: "Régua automática",
-                desc: "E-mails e WhatsApps automáticos em português, com tom progressivo de amigável a formal, nos dias 1, 7, 15 e 30.",
-              },
-              {
-                step: "03",
-                icon: Landmark,
-                color: "bg-violet-600",
-                title: "Serasa + Cartório",
-                desc: "Caso não haja resposta, negativamos o CPF/CNPJ no Serasa Experian e protestamos o título em cartório.",
-              },
-              {
-                step: "04",
-                icon: DollarSign,
-                color: "bg-emerald-600",
-                title: "Recebe em moeda forte",
-                desc: "Quando o pagamento ocorre, fazemos o repasse em USD, EUR ou GBP via transferência internacional.",
-              },
+              { step: "01", icon: FileText, color: "bg-blue-600", title: t("solution.step1title"), desc: t("solution.step1desc") },
+              { step: "02", icon: Bell, color: "bg-indigo-600", title: t("solution.step2title"), desc: t("solution.step2desc") },
+              { step: "03", icon: Landmark, color: "bg-violet-600", title: t("solution.step3title"), desc: t("solution.step3desc") },
+              { step: "04", icon: DollarSign, color: "bg-emerald-600", title: t("solution.step4title"), desc: t("solution.step4desc") },
             ].map(({ step, icon: Icon, color, title, desc }) => (
               <div key={step} className="relative flex flex-col items-center text-center px-6">
                 <div
@@ -270,10 +241,10 @@ export default function LandingPage() {
               href="/cadastro"
               className="inline-flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-xl shadow-blue-600/25"
             >
-              Cadastrar minha primeira dívida
+              {t("solution.cta")}
               <ArrowRight className="w-4 h-4" />
             </Link>
-            <p className="text-slate-400 text-sm mt-3">Grátis para até 5 dívidas · Sem cartão de crédito</p>
+            <p className="text-slate-400 text-sm mt-3">{t("solution.ctasub")}</p>
           </div>
         </div>
       </section>
@@ -283,71 +254,67 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-14">
             <p className="text-blue-600 font-semibold text-sm uppercase tracking-widest mb-3">
-              Quem atendemos
+              {t("segments.badge")}
             </p>
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">
-              Qualquer credor estrangeiro com devedores no Brasil
-            </h2>
-            <p className="text-slate-500 text-lg max-w-xl mx-auto">
-              De startups SaaS a exportadores de equipamentos — cobramos por você, independente do setor.
-            </p>
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">{t("segments.title")}</h2>
+            <p className="text-slate-500 text-lg max-w-xl mx-auto">{t("segments.sub")}</p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               {
                 icon: Code2,
-                label: "SaaS & Software",
-                desc: "Licenças e assinaturas não pagas",
+                label: t("segments.saas"),
+                desc: t("segments.saasdesc"),
                 color: "from-blue-50 to-indigo-50 border-blue-100",
                 iconColor: "text-blue-600 bg-blue-100",
               },
               {
                 icon: ShoppingCart,
-                label: "E-commerce",
-                desc: "Chargebacks e produtos não pagos",
+                label: t("segments.ecommerce"),
+                desc: t("segments.ecommercedesc"),
                 color: "from-violet-50 to-purple-50 border-violet-100",
                 iconColor: "text-violet-600 bg-violet-100",
               },
               {
                 icon: Briefcase,
-                label: "Consultoria",
-                desc: "Honorários e projetos em aberto",
+                label: t("segments.consulting"),
+                desc: t("segments.consultingdesc"),
                 color: "from-slate-50 to-gray-50 border-slate-200",
                 iconColor: "text-slate-600 bg-slate-100",
               },
               {
                 icon: BookOpen,
-                label: "Educação",
-                desc: "Cursos, MBAs e mensalidades",
+                label: t("segments.education"),
+                desc: t("segments.educationdesc"),
                 color: "from-amber-50 to-yellow-50 border-amber-100",
                 iconColor: "text-amber-600 bg-amber-100",
               },
               {
                 icon: Package,
-                label: "Equipamentos",
-                desc: "Exportações e leasing industrial",
+                label: t("segments.equipment"),
+                desc: t("segments.equipmentdesc"),
                 color: "from-orange-50 to-red-50 border-orange-100",
                 iconColor: "text-orange-600 bg-orange-100",
               },
               {
                 icon: Home,
-                label: "Imobiliário",
-                desc: "Aluguéis e contratos internacionais",
+                label: t("segments.realestate"),
+                desc: t("segments.realestate desc"),
                 color: "from-emerald-50 to-green-50 border-emerald-100",
                 iconColor: "text-emerald-600 bg-emerald-100",
               },
               {
                 icon: Stethoscope,
-                label: "Saúde",
-                desc: "Serviços médicos prestados no exterior",
+                label: t("segments.health"),
+                desc: t("segments.healthdesc"),
                 color: "from-cyan-50 to-teal-50 border-cyan-100",
                 iconColor: "text-cyan-600 bg-cyan-100",
               },
               {
                 icon: Globe,
-                label: "Outros setores",
-                desc: "Qualquer dívida com devedor no Brasil",
+                label: t("segments.other"),
+                desc: t("segments.otherdesc"),
                 color: "from-pink-50 to-rose-50 border-pink-100",
                 iconColor: "text-pink-600 bg-pink-100",
               },
@@ -373,14 +340,13 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
               <p className="text-blue-600 font-semibold text-sm uppercase tracking-widest mb-3">
-                Por que CrossCollect
+                {t("features.badge")}
               </p>
               <h2 className="text-4xl font-bold text-slate-900 mb-6 leading-tight">
-                Tecnologia + presença jurídica no Brasil
+                {t("features.title")}
               </h2>
               <p className="text-slate-500 text-lg leading-relaxed mb-10">
-                Não somos só um software — temos estrutura operacional no Brasil com parceiros
-                jurídicos, acesso direto ao Serasa Experian e rede de cartórios em todo o país.
+                {t("features.sub")}
               </p>
 
               <div className="space-y-5">
@@ -388,26 +354,26 @@ export default function LandingPage() {
                   {
                     icon: Zap,
                     color: "bg-yellow-50 text-yellow-600",
-                    title: "Régua inteligente com IA",
-                    desc: "O assistente Claude analisa cada devedor e personaliza o tom e timing das comunicações.",
+                    title: t("features.f1title"),
+                    desc: t("features.f1desc"),
                   },
                   {
                     icon: Lock,
                     color: "bg-blue-50 text-blue-600",
-                    title: "100% em conformidade com a LGPD",
-                    desc: "Tratamento de dados conforme a lei brasileira de proteção de dados e o CDC.",
+                    title: t("features.f2title"),
+                    desc: t("features.f2desc"),
                   },
                   {
                     icon: BarChart3,
                     color: "bg-emerald-50 text-emerald-600",
-                    title: "Dashboard em tempo real",
-                    desc: "Acompanhe cada dívida, e-mail enviado e WhatsApp respondido em um único lugar.",
+                    title: t("features.f3title"),
+                    desc: t("features.f3desc"),
                   },
                   {
                     icon: Globe2,
                     color: "bg-violet-50 text-violet-600",
-                    title: "Repasse em moeda estrangeira",
-                    desc: "Receba em USD, EUR ou GBP direto na sua conta internacional via Wise ou SWIFT.",
+                    title: t("features.f4title"),
+                    desc: t("features.f4desc"),
                   },
                 ].map(({ icon: Icon, color, title, desc }) => (
                   <div key={title} className="flex items-start gap-4">
@@ -508,37 +474,34 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-14">
             <p className="text-blue-600 font-semibold text-sm uppercase tracking-widest mb-3">
-              Depoimentos
+              {t("testimonials.badge")}
             </p>
             <h2 className="text-4xl font-bold text-slate-900">
-              Credores que recuperaram o que era deles
+              {t("testimonials.title")}
             </h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                texto:
-                  "Tínhamos R$ 280 mil parados há 2 anos com um distribuidor brasileiro. Em 45 dias a CrossCollect recuperou 100% do valor. Impensável pela via tradicional.",
-                nome: "Stefan Müller",
-                cargo: "CFO · Precision Tools GmbH",
-                pais: "🇩🇪 Alemanha",
+                texto: t("testimonials.t1text"),
+                nome: t("testimonials.t1name"),
+                cargo: t("testimonials.t1role"),
+                pais: t("testimonials.t1country"),
                 stars: 5,
               },
               {
-                texto:
-                  "Nossa plataforma SaaS tinha dezenas de clientes brasileiros inadimplentes. A régua automática resolveu 68% deles sem intervenção manual. O ROI foi imediato.",
-                nome: "Sarah Chen",
-                cargo: "Head of Finance · CloudBase Inc.",
-                pais: "🇺🇸 Estados Unidos",
+                texto: t("testimonials.t2text"),
+                nome: t("testimonials.t2name"),
+                cargo: t("testimonials.t2role"),
+                pais: t("testimonials.t2country"),
                 stars: 5,
               },
               {
-                texto:
-                  "O que me impressionou foi a conformidade com a LGPD. Como empresa europeia, o aspecto jurídico era crítico. A CrossCollect cobriu todos os ângulos.",
-                nome: "Marie Dupont",
-                cargo: "Legal Director · EduTech Paris",
-                pais: "🇫🇷 França",
+                texto: t("testimonials.t3text"),
+                nome: t("testimonials.t3name"),
+                cargo: t("testimonials.t3role"),
+                pais: t("testimonials.t3country"),
                 stars: 5,
               },
             ].map(({ texto, nome, cargo, pais, stars }) => (
@@ -569,39 +532,39 @@ export default function LandingPage() {
       <section className="py-24 bg-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <p className="text-blue-600 font-semibold text-sm uppercase tracking-widest mb-3">
-            Preços
+            {t("pricing.badge")}
           </p>
           <h2 className="text-4xl font-bold text-slate-900 mb-4">
-            Simples e transparente
+            {t("pricing.title")}
           </h2>
           <p className="text-slate-500 text-lg mb-12">
-            Comece grátis. Escale quando precisar.
+            {t("pricing.sub")}
           </p>
 
           <div className="grid md:grid-cols-3 gap-5 mb-10">
             {[
               {
-                nome: "Starter",
-                preco: "Grátis",
-                sub: "Para sempre",
-                recursos: ["5 dívidas ativas", "IA (50 msg/mês)", "Régua básica", "1 usuário"],
-                cta: "Começar grátis",
+                nome: t("pricing.starter"),
+                preco: t("pricing.starterPrice"),
+                sub: t("pricing.starterSub"),
+                recursos: [t("pricing.r1"), t("pricing.r2"), t("pricing.r3"), t("pricing.r4")],
+                cta: t("pricing.cta1"),
                 destaque: false,
               },
               {
-                nome: "Growth",
+                nome: t("pricing.growth"),
                 preco: "$ 49",
-                sub: "/mês",
-                recursos: ["50 dívidas ativas", "IA (1.000 msg/mês)", "E-mail + WhatsApp", "3 usuários"],
-                cta: "Assinar Growth",
+                sub: t("pricing.month"),
+                recursos: [t("pricing.r5"), t("pricing.r6"), t("pricing.r7"), t("pricing.r8")],
+                cta: t("pricing.cta2"),
                 destaque: true,
               },
               {
-                nome: "Professional",
+                nome: t("pricing.professional"),
                 preco: "$ 149",
-                sub: "/mês",
-                recursos: ["Dívidas ilimitadas", "IA ilimitada", "Serasa + Cartório", "10 usuários"],
-                cta: "Assinar Pro",
+                sub: t("pricing.month"),
+                recursos: [t("pricing.r9"), t("pricing.r10"), t("pricing.r11"), t("pricing.r12")],
+                cta: t("pricing.cta3"),
                 destaque: false,
               },
             ].map(({ nome, preco, sub, recursos, cta, destaque }) => (
@@ -650,7 +613,7 @@ export default function LandingPage() {
             href="/planos"
             className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 font-medium text-sm"
           >
-            Ver todos os planos e comparativo completo
+            {t("pricing.allPlans")}
             <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -661,10 +624,10 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { value: "68%", label: "taxa média de recuperação", icon: TrendingUp },
-              { value: "45 dias", label: "tempo médio de resolução", icon: Clock },
-              { value: "200+", label: "credores internacionais", icon: Users },
-              { value: "R$ 50M+", label: "gerenciados na plataforma", icon: Award },
+              { value: t("metrics.m1"), label: t("metrics.m1label"), icon: TrendingUp },
+              { value: t("metrics.m2"), label: t("metrics.m2label"), icon: Clock },
+              { value: t("metrics.m3"), label: t("metrics.m3label"), icon: Users },
+              { value: t("metrics.m4"), label: t("metrics.m4label"), icon: Award },
             ].map(({ value, label, icon: Icon }) => (
               <div key={label} className="flex flex-col items-center gap-2">
                 <Icon className="w-5 h-5 text-blue-400 mb-1" />
@@ -688,18 +651,15 @@ export default function LandingPage() {
         />
         <div className="relative max-w-3xl mx-auto px-6 text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-5 leading-tight">
-            Seu dinheiro no Brasil<br />está esperando por você.
+            {t("finalCta.title")}<br />{t("finalCta.titleHighlight")}
           </h2>
-          <p className="text-blue-200 text-lg mb-10 max-w-xl mx-auto">
-            Crie sua conta em 2 minutos, cadastre sua primeira dívida e deixe a régua automática
-            trabalhar por você. Sem burocracia, sem advogados, sem complicação.
-          </p>
+          <p className="text-blue-200 text-lg mb-10 max-w-xl mx-auto">{t("finalCta.sub")}</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/cadastro"
               className="flex items-center gap-2 px-10 py-4 bg-white hover:bg-blue-50 text-blue-700 font-bold text-base rounded-2xl transition-all shadow-2xl group"
             >
-              Criar conta gratuita
+              {t("finalCta.cta1")}
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
@@ -707,12 +667,10 @@ export default function LandingPage() {
               className="flex items-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-semibold text-base rounded-2xl border border-white/30 transition-all"
             >
               <Play className="w-4 h-4" />
-              Explorar o demo
+              {t("finalCta.cta2")}
             </Link>
           </div>
-          <p className="text-blue-300 text-sm mt-6">
-            Grátis para as primeiras 5 dívidas · Sem cartão de crédito · Cancele quando quiser
-          </p>
+          <p className="text-blue-300 text-sm mt-6">{t("finalCta.disclaimer")}</p>
         </div>
       </section>
 
@@ -729,7 +687,7 @@ export default function LandingPage() {
                 <span className="font-bold text-white text-lg">CrossCollect</span>
               </div>
               <p className="text-sm leading-relaxed max-w-xs">
-                Plataforma SaaS de cobrança internacional para credores estrangeiros com devedores no Brasil.
+                {t("footer.tagline")}
               </p>
               <div className="flex gap-3 mt-5">
                 {["LinkedIn", "Twitter", "YouTube"].map((s) => (
@@ -747,16 +705,16 @@ export default function LandingPage() {
             {/* Links */}
             {[
               {
-                title: "Produto",
-                links: ["Como funciona", "Preços", "Assistente IA", "Régua de cobrança", "API"],
+                title: t("footer.product"),
+                links: [t("footer.howItWorks"), t("footer.pricing"), t("footer.aiAssistant"), t("footer.collectionRule"), t("footer.api")],
               },
               {
-                title: "Empresa",
-                links: ["Sobre", "Blog", "Parceiros", "Imprensa", "Carreiras"],
+                title: t("footer.company"),
+                links: [t("footer.about"), t("footer.blog"), t("footer.partners"), t("footer.press"), t("footer.careers")],
               },
               {
-                title: "Legal",
-                links: ["Termos de uso", "Privacidade", "LGPD", "Cookies", "SLA"],
+                title: t("footer.legal"),
+                links: [t("footer.terms"), t("footer.privacy"), t("footer.lgpd"), t("footer.cookies"), t("footer.sla")],
               },
             ].map(({ title, links }) => (
               <div key={title}>
@@ -776,14 +734,14 @@ export default function LandingPage() {
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 border-t border-slate-800">
             <p className="text-xs text-slate-600">
-              © {new Date().getFullYear()} CrossCollect. Todos os direitos reservados.
+              © {new Date().getFullYear()} CrossCollect. {t("footer.rights")}
             </p>
             <div className="flex items-center gap-6 text-xs text-slate-600">
-              <span>Em conformidade com a LGPD · Lei 13.709/18</span>
-              <span>CDC · Lei 8.078/90</span>
+              <span>{t("footer.compliance1")}</span>
+              <span>{t("footer.compliance2")}</span>
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-emerald-600">Sistema operacional</span>
+                <span className="text-emerald-600">{t("footer.status")}</span>
               </div>
             </div>
           </div>

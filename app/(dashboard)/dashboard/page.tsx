@@ -15,8 +15,17 @@ import {
   MessageCircle,
   BarChart3,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { mockMetrics, mockDebts, mockComunicacaoMetrics } from "@/lib/mock-data";
-import { formatCurrency, formatDate, getStatusColor, getStatusLabel } from "@/lib/utils";
+import { formatCurrency, formatDate, getStatusLabel } from "@/lib/utils";
+
+const statusBadgeClass: Record<string, string> = {
+  pendente: "bg-yellow-50 text-yellow-700 border border-yellow-100",
+  em_negociacao: "bg-blue-50 text-blue-700 border border-blue-100",
+  pago: "bg-emerald-50 text-emerald-700 border border-emerald-100",
+  vencido: "bg-red-50 text-red-700 border border-red-100",
+  cancelado: "bg-slate-100 text-slate-600",
+};
 
 function MetricCard({
   title,
@@ -51,16 +60,10 @@ function MetricCard({
         {trend && trendValue && (
           <div
             className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
-              trend === "up"
-                ? "bg-emerald-50 text-emerald-700"
-                : "bg-red-50 text-red-700"
+              trend === "up" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
             }`}
           >
-            {trend === "up" ? (
-              <TrendingUp className="w-3 h-3" />
-            ) : (
-              <TrendingDown className="w-3 h-3" />
-            )}
+            {trend === "up" ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
             {trendValue}
           </div>
         )}
@@ -74,23 +77,17 @@ function MetricCard({
   );
 }
 
-const statusBadgeClass: Record<string, string> = {
-  pendente: "bg-yellow-50 text-yellow-700 border border-yellow-100",
-  em_negociacao: "bg-blue-50 text-blue-700 border border-blue-100",
-  pago: "bg-emerald-50 text-emerald-700 border border-emerald-100",
-  vencido: "bg-red-50 text-red-700 border border-red-100",
-  cancelado: "bg-slate-100 text-slate-600",
-};
-
 export default function DashboardPage() {
+  const t = useTranslations("dashboard");
+  const tc = useTranslations("common");
   const recentDebts = mockDebts.slice(0, 5);
 
   const chartData = [
-    { mes: "Out", valor: 48000 },
+    { mes: "Oct", valor: 48000 },
     { mes: "Nov", valor: 62000 },
-    { mes: "Dez", valor: 55000 },
+    { mes: "Dec", valor: 55000 },
     { mes: "Jan", valor: 78000 },
-    { mes: "Fev", valor: 91000 },
+    { mes: "Feb", valor: 91000 },
     { mes: "Mar", valor: 125000 },
   ];
   const maxVal = Math.max(...chartData.map((d) => d.valor));
@@ -100,31 +97,31 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-          <p className="text-slate-500 mt-0.5">Bem-vindo de volta, João. Aqui está o resumo da sua carteira.</p>
+          <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
+          <p className="text-slate-500 mt-0.5">{t("subtitle", { name: "João" })}</p>
         </div>
         <Link
           href="/dividas/nova"
           className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-600/25"
         >
           <Plus className="w-4 h-4" />
-          Nova Dívida
+          {t("newDebt")}
         </Link>
       </div>
 
       {/* Metrics */}
       <div className="grid grid-cols-4 gap-5 mb-8">
         <MetricCard
-          title="Total em Aberto"
+          title={t("metrics.openBalance")}
           value={formatCurrency(mockMetrics.total_em_aberto, "USD")}
-          subtitle={`≈ ${formatCurrency(mockMetrics.total_em_aberto_brl)} em BRL`}
+          subtitle={t("metrics.openBalanceSub", { value: formatCurrency(mockMetrics.total_em_aberto_brl) })}
           trend="up"
           trendValue="+8.2%"
           icon={DollarSign}
           color="blue"
         />
         <MetricCard
-          title="Recuperado este mês"
+          title={t("metrics.recoveredMonth")}
           value={formatCurrency(mockMetrics.recuperado_mes, "USD")}
           subtitle={`≈ ${formatCurrency(mockMetrics.recuperado_mes_brl)}`}
           trend="up"
@@ -133,18 +130,18 @@ export default function DashboardPage() {
           color="green"
         />
         <MetricCard
-          title="Taxa de Sucesso"
+          title={t("metrics.successRate")}
           value={`${mockMetrics.taxa_sucesso}%`}
-          subtitle="Últimos 90 dias"
+          subtitle={t("metrics.successRateSub")}
           trend="up"
           trendValue="+3.1%"
           icon={CheckCircle2}
           color="purple"
         />
         <MetricCard
-          title="Casos Ativos"
+          title={t("metrics.activeCases")}
           value={String(mockMetrics.casos_ativos)}
-          subtitle={`${mockMetrics.casos_vencidos} vencidos`}
+          subtitle={t("metrics.activeCasesSub", { count: mockMetrics.casos_vencidos })}
           icon={FileText}
           color="orange"
         />
@@ -155,15 +152,14 @@ export default function DashboardPage() {
         <div className="col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="font-semibold text-slate-900">Recuperação Mensal</h3>
-              <p className="text-slate-400 text-sm">Últimos 6 meses (USD)</p>
+              <h3 className="font-semibold text-slate-900">{t("chart.title")}</h3>
+              <p className="text-slate-400 text-sm">{t("chart.sub")}</p>
             </div>
             <select className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option>Últimos 6 meses</option>
-              <option>Último ano</option>
+              <option>{t("chart.last6")}</option>
+              <option>{t("chart.lastYear")}</option>
             </select>
           </div>
-
           <div className="flex items-end gap-3 h-40">
             {chartData.map((d) => (
               <div key={d.mes} className="flex-1 flex flex-col items-center gap-1.5">
@@ -184,13 +180,13 @@ export default function DashboardPage() {
 
         {/* Status breakdown */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 className="font-semibold text-slate-900 mb-5">Status da Carteira</h3>
+          <h3 className="font-semibold text-slate-900 mb-5">{t("portfolio.title")}</h3>
           <div className="space-y-4">
             {[
-              { label: "Pendentes", count: 18, pct: 42, color: "bg-yellow-400" },
-              { label: "Em Negociação", count: 12, pct: 28, color: "bg-blue-500" },
-              { label: "Vencidas", count: 8, pct: 19, color: "bg-red-500" },
-              { label: "Pagas", count: 5, pct: 11, color: "bg-emerald-500" },
+              { label: t("portfolio.pending"), count: 18, pct: 42, color: "bg-yellow-400" },
+              { label: t("portfolio.negotiating"), count: 12, pct: 28, color: "bg-blue-500" },
+              { label: t("portfolio.overdue"), count: 8, pct: 19, color: "bg-red-500" },
+              { label: t("portfolio.paid"), count: 5, pct: 11, color: "bg-emerald-500" },
             ].map((item) => (
               <div key={item.label}>
                 <div className="flex justify-between items-center mb-1.5">
@@ -209,13 +205,12 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-
           <div className="mt-6 pt-5 border-t border-slate-100">
             <Link
               href="/dividas"
               className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
             >
-              Ver todas as dívidas
+              {t("recentDebts.viewAll")}
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -226,18 +221,17 @@ export default function DashboardPage() {
       <div className="mt-6 bg-white rounded-2xl shadow-sm border border-slate-100">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-slate-900">Dívidas Recentes</h3>
-            <p className="text-slate-400 text-sm">Adicionadas nos últimos 30 dias</p>
+            <h3 className="font-semibold text-slate-900">{t("recentDebts.title")}</h3>
+            <p className="text-slate-400 text-sm">{t("recentDebts.sub")}</p>
           </div>
           <Link
             href="/dividas"
             className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
           >
-            Ver todas
+            {t("recentDebts.viewAll")}
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
-
         <div className="divide-y divide-slate-50">
           {recentDebts.map((debt) => (
             <Link
@@ -246,9 +240,7 @@ export default function DashboardPage() {
               className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-colors group"
             >
               <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center flex-shrink-0">
-                <span className="text-slate-600 font-bold text-sm">
-                  {debt.devedor.nome.charAt(0)}
-                </span>
+                <span className="text-slate-600 font-bold text-sm">{debt.devedor.nome.charAt(0)}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-slate-900 text-sm truncate group-hover:text-blue-600 transition-colors">
@@ -263,9 +255,7 @@ export default function DashboardPage() {
                 <p className="text-slate-400 text-xs">{formatCurrency(debt.valor_brl)}</p>
               </div>
               <div className="flex-shrink-0">
-                <span
-                  className={`inline-flex text-xs font-medium px-2.5 py-1 rounded-full ${statusBadgeClass[debt.status]}`}
-                >
+                <span className={`inline-flex text-xs font-medium px-2.5 py-1 rounded-full ${statusBadgeClass[debt.status]}`}>
                   {getStatusLabel(debt.status)}
                 </span>
               </div>
@@ -278,92 +268,70 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Comunicações desta semana */}
+      {/* Communications */}
       <div className="mt-6 grid grid-cols-3 gap-5">
-
-        {/* E-mails */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center">
               <Mail className="w-4 h-4 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900">E-mails enviados</p>
-              <p className="text-xs text-slate-400">Esta semana</p>
+              <p className="text-sm font-semibold text-slate-900">{t("communications.emailsSent")}</p>
+              <p className="text-xs text-slate-400">{t("communications.thisWeek")}</p>
             </div>
           </div>
-          <p className="text-3xl font-bold text-slate-900 mb-1">
-            {mockComunicacaoMetrics.emails_enviados_semana}
-          </p>
+          <p className="text-3xl font-bold text-slate-900 mb-1">{mockComunicacaoMetrics.emails_enviados_semana}</p>
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-xs text-slate-500">
-              {mockComunicacaoMetrics.emails_abertos_semana} abertos
-            </span>
+            <span className="text-xs text-slate-500">{mockComunicacaoMetrics.emails_abertos_semana} {t("communications.opened")}</span>
             <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
-              {mockComunicacaoMetrics.taxa_abertura_email}% abertura
+              {mockComunicacaoMetrics.taxa_abertura_email}% {t("communications.openRate")}
             </span>
           </div>
-          {/* Mini bar chart */}
           <div className="flex items-end gap-1 h-10">
             {mockComunicacaoMetrics.por_dia.map((d) => (
               <div key={d.dia} className="flex-1 flex flex-col items-center gap-0.5">
-                <div
-                  className="w-full bg-blue-200 hover:bg-blue-400 rounded-sm transition-colors cursor-pointer"
-                  style={{ height: `${(d.emails / 10) * 36}px`, minHeight: "3px" }}
-                  title={`${d.dia}: ${d.emails} emails`}
-                />
+                <div className="w-full bg-blue-200 hover:bg-blue-400 rounded-sm transition-colors" style={{ height: `${(d.emails / 10) * 36}px`, minHeight: "3px" }} />
                 <span className="text-[9px] text-slate-400">{d.dia[0]}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* WhatsApp */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center">
               <MessageCircle className="w-4 h-4 text-emerald-600" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900">WhatsApps enviados</p>
-              <p className="text-xs text-slate-400">Esta semana</p>
+              <p className="text-sm font-semibold text-slate-900">{t("communications.whatsappSent")}</p>
+              <p className="text-xs text-slate-400">{t("communications.thisWeek")}</p>
             </div>
           </div>
-          <p className="text-3xl font-bold text-slate-900 mb-1">
-            {mockComunicacaoMetrics.whatsapp_enviados_semana}
-          </p>
+          <p className="text-3xl font-bold text-slate-900 mb-1">{mockComunicacaoMetrics.whatsapp_enviados_semana}</p>
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-xs text-slate-500">
-              {mockComunicacaoMetrics.whatsapp_respondidos_semana} respostas
-            </span>
+            <span className="text-xs text-slate-500">{mockComunicacaoMetrics.whatsapp_respondidos_semana} {t("communications.replies")}</span>
             <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
-              {mockComunicacaoMetrics.taxa_resposta_whatsapp}% resposta
+              {mockComunicacaoMetrics.taxa_resposta_whatsapp}% {t("communications.replyRate")}
             </span>
           </div>
-          {/* Mini bar chart */}
           <div className="flex items-end gap-1 h-10">
             {mockComunicacaoMetrics.por_dia.map((d) => (
               <div key={d.dia} className="flex-1 flex flex-col items-center gap-0.5">
-                <div
-                  className="w-full bg-emerald-200 hover:bg-emerald-400 rounded-sm transition-colors cursor-pointer"
-                  style={{ height: `${(d.whatsapp / 10) * 36}px`, minHeight: "3px" }}
-                  title={`${d.dia}: ${d.whatsapp} WA`}
-                />
+                <div className="w-full bg-emerald-200 hover:bg-emerald-400 rounded-sm transition-colors" style={{ height: `${(d.whatsapp / 10) * 36}px`, minHeight: "3px" }} />
                 <span className="text-[9px] text-slate-400">{d.dia[0]}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Total comunicações */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-9 h-9 bg-violet-50 rounded-xl flex items-center justify-center">
               <BarChart3 className="w-4 h-4 text-violet-600" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900">Total comunicações</p>
-              <p className="text-xs text-slate-400">Esta semana</p>
+              <p className="text-sm font-semibold text-slate-900">{t("communications.totalComms")}</p>
+              <p className="text-xs text-slate-400">{t("communications.thisWeek")}</p>
             </div>
           </div>
           <p className="text-3xl font-bold text-slate-900 mb-4">
@@ -371,7 +339,7 @@ export default function DashboardPage() {
           </p>
           <div className="space-y-2">
             {[
-              { label: "E-mail", count: mockComunicacaoMetrics.emails_enviados_semana, color: "bg-blue-500" },
+              { label: "Email", count: mockComunicacaoMetrics.emails_enviados_semana, color: "bg-blue-500" },
               { label: "WhatsApp", count: mockComunicacaoMetrics.whatsapp_enviados_semana, color: "bg-emerald-500" },
             ].map((item) => {
               const total = mockComunicacaoMetrics.emails_enviados_semana + mockComunicacaoMetrics.whatsapp_enviados_semana;
@@ -392,22 +360,20 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Alerts */}
+      {/* Alert */}
       <div className="mt-6 bg-amber-50 border border-amber-100 rounded-2xl p-5 flex items-start gap-4">
         <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
         <div>
           <p className="font-semibold text-amber-900 text-sm">
-            {mockMetrics.casos_vencidos} dívidas vencidas precisam de atenção
+            {t("alert.title", { count: mockMetrics.casos_vencidos })}
           </p>
-          <p className="text-amber-700 text-sm mt-0.5">
-            Ative o assistente IA para receber sugestões de estratégia de cobrança personalizadas.
-          </p>
+          <p className="text-amber-700 text-sm mt-0.5">{t("alert.sub")}</p>
         </div>
         <Link
           href="/assistente"
           className="ml-auto flex-shrink-0 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition-all"
         >
-          Abrir Assistente
+          {t("alert.cta")}
         </Link>
       </div>
     </div>
