@@ -1,4 +1,4 @@
-import type { Debt, DashboardMetrics, TimelineEvent } from "@/types";
+import type { Debt, DashboardMetrics, TimelineEvent, ComunicacaoMetrics } from "@/types";
 
 export const mockMetrics: DashboardMetrics = {
   total_em_aberto: 847500,
@@ -9,6 +9,22 @@ export const mockMetrics: DashboardMetrics = {
   casos_ativos: 43,
   casos_vencidos: 12,
   variacao_mensal: 12.5,
+};
+
+export const mockComunicacaoMetrics: ComunicacaoMetrics = {
+  emails_enviados_semana: 34,
+  whatsapp_enviados_semana: 27,
+  emails_abertos_semana: 21,
+  whatsapp_respondidos_semana: 9,
+  taxa_abertura_email: 61.8,
+  taxa_resposta_whatsapp: 33.3,
+  por_dia: [
+    { dia: "Seg", emails: 8, whatsapp: 6 },
+    { dia: "Ter", emails: 5, whatsapp: 4 },
+    { dia: "Qua", emails: 7, whatsapp: 5 },
+    { dia: "Qui", emails: 6, whatsapp: 3 },
+    { dia: "Sex", emails: 8, whatsapp: 9 },
+  ],
 };
 
 const mockTimeline: TimelineEvent[] = [

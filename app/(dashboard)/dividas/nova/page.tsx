@@ -14,8 +14,11 @@ import {
   Plus,
   X,
   Upload,
+  Mail,
+  MessageCircle,
+  AlertCircle,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 
 const steps = [
   { id: 1, label: "Devedor", icon: User },
@@ -75,6 +78,12 @@ export default function NovaDividaPage() {
 
   // Step 4: Régua
   const [cobrancaSteps, setCobrancaSteps] = useState(defaultCollectionSteps);
+  const [regraStatus, setRegraStatus] = useState<{
+    enviados: number;
+    agendados: number;
+    erros: number;
+    acoes: { tipo: string; subtipo: string; status: string; diasAposVencimento: number }[];
+  } | null>(null);
 
   function nextStep() {
     if (step < 4) setStep(step + 1);
@@ -92,7 +101,42 @@ export default function NovaDividaPage() {
 
   async function handleSubmit() {
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    try {
+      // Dispara a régua automática de cobrança
+      const dividaId = `d_${Date.now()}`;
+      const res = await fetch("/api/cobranca/iniciar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          divida: {
+            id: dividaId,
+            descricao: divida.descricao || "Pendência financeira",
+            valor: divida.valor || "0",
+            moeda: divida.moeda,
+            dataVencimento: divida.dataVencimento
+              ? formatDate(divida.dataVencimento)
+              : "—",
+            linkPagamento: `${window.location.origin}/pagar/${dividaId}`,
+          },
+          devedor: {
+            nome: devedor.nome || "Devedor",
+            email: devedor.email || "",
+            telefone: devedor.telefone || "",
+          },
+          nomeCredor: "CrossCollect",
+          baseUrl: window.location.origin,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setRegraStatus(data.resumo ? { ...data.resumo, acoes: data.acoes } : null);
+        // Wait a moment to show success feedback before redirecting
+        await new Promise((r) => setTimeout(r, 2500));
+      }
+    } catch (err) {
+      console.error("Erro ao iniciar régua:", err);
+    }
     router.push("/dividas");
   }
 
@@ -498,6 +542,37 @@ export default function NovaDividaPage() {
           </div>
         )}
 
+        {/* Régua feedback */}
+        {regraStatus && (
+          <div className="mt-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4 animate-fade-in">
+            <p className="font-semibold text-emerald-800 text-sm mb-3 flex items-center gap-2">
+              <Check className="w-4 h-4" />
+              Régua de cobrança iniciada com sucesso!
+            </p>
+            <div className="space-y-2">
+              {regraStatus.acoes?.map((acao, i) => (
+                <div key={i} className="flex items-center gap-2 text-xs">
+                  {acao.tipo === "email" ? (
+                    <Mail className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                  ) : (
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                  )}
+                  <span className={`font-medium ${acao.status === "enviado" ? "text-emerald-700" : acao.status === "agendado" ? "text-blue-600" : "text-red-600"}`}>
+                    {acao.status === "enviado" ? "✓ Enviado" : acao.status === "agendado" ? "⏰ Agendado" : "✗ Erro"}
+                  </span>
+                  <span className="text-slate-500">
+                    {acao.tipo === "email" ? "E-mail" : "WhatsApp"} — {acao.subtipo.replace("_", " ")}
+                    {acao.diasAposVencimento > 0 ? ` (dia +${acao.diasAposVencimento})` : " (agora)"}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-emerald-600 mt-2">
+              {regraStatus.enviados} enviados · {regraStatus.agendados} agendados · {regraStatus.erros} erros
+            </p>
+          </div>
+        )}
+
         {/* Navigation */}
         <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-100">
           <button
@@ -535,13 +610,18 @@ export default function NovaDividaPage() {
               disabled={isSubmitting}
               className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-60"
             >
-              {isSubmitting ? (
+              {isSubmitting && !regraStatus ? (
                 <>
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
-                  Salvando...
+                  Cadastrando e disparando régua...
+                </>
+              ) : regraStatus ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  Régua iniciada! Redirecionando...
                 </>
               ) : (
                 <>

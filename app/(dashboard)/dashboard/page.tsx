@@ -11,8 +11,11 @@ import {
   ArrowRight,
   Plus,
   Clock,
+  Mail,
+  MessageCircle,
+  BarChart3,
 } from "lucide-react";
-import { mockMetrics, mockDebts } from "@/lib/mock-data";
+import { mockMetrics, mockDebts, mockComunicacaoMetrics } from "@/lib/mock-data";
 import { formatCurrency, formatDate, getStatusColor, getStatusLabel } from "@/lib/utils";
 
 function MetricCard({
@@ -272,6 +275,120 @@ export default function DashboardPage() {
               </div>
             </Link>
           ))}
+        </div>
+      </div>
+
+      {/* Comunicações desta semana */}
+      <div className="mt-6 grid grid-cols-3 gap-5">
+
+        {/* E-mails */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center">
+              <Mail className="w-4 h-4 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">E-mails enviados</p>
+              <p className="text-xs text-slate-400">Esta semana</p>
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-slate-900 mb-1">
+            {mockComunicacaoMetrics.emails_enviados_semana}
+          </p>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xs text-slate-500">
+              {mockComunicacaoMetrics.emails_abertos_semana} abertos
+            </span>
+            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
+              {mockComunicacaoMetrics.taxa_abertura_email}% abertura
+            </span>
+          </div>
+          {/* Mini bar chart */}
+          <div className="flex items-end gap-1 h-10">
+            {mockComunicacaoMetrics.por_dia.map((d) => (
+              <div key={d.dia} className="flex-1 flex flex-col items-center gap-0.5">
+                <div
+                  className="w-full bg-blue-200 hover:bg-blue-400 rounded-sm transition-colors cursor-pointer"
+                  style={{ height: `${(d.emails / 10) * 36}px`, minHeight: "3px" }}
+                  title={`${d.dia}: ${d.emails} emails`}
+                />
+                <span className="text-[9px] text-slate-400">{d.dia[0]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* WhatsApp */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center">
+              <MessageCircle className="w-4 h-4 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">WhatsApps enviados</p>
+              <p className="text-xs text-slate-400">Esta semana</p>
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-slate-900 mb-1">
+            {mockComunicacaoMetrics.whatsapp_enviados_semana}
+          </p>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xs text-slate-500">
+              {mockComunicacaoMetrics.whatsapp_respondidos_semana} respostas
+            </span>
+            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
+              {mockComunicacaoMetrics.taxa_resposta_whatsapp}% resposta
+            </span>
+          </div>
+          {/* Mini bar chart */}
+          <div className="flex items-end gap-1 h-10">
+            {mockComunicacaoMetrics.por_dia.map((d) => (
+              <div key={d.dia} className="flex-1 flex flex-col items-center gap-0.5">
+                <div
+                  className="w-full bg-emerald-200 hover:bg-emerald-400 rounded-sm transition-colors cursor-pointer"
+                  style={{ height: `${(d.whatsapp / 10) * 36}px`, minHeight: "3px" }}
+                  title={`${d.dia}: ${d.whatsapp} WA`}
+                />
+                <span className="text-[9px] text-slate-400">{d.dia[0]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Total comunicações */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 bg-violet-50 rounded-xl flex items-center justify-center">
+              <BarChart3 className="w-4 h-4 text-violet-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Total comunicações</p>
+              <p className="text-xs text-slate-400">Esta semana</p>
+            </div>
+          </div>
+          <p className="text-3xl font-bold text-slate-900 mb-4">
+            {mockComunicacaoMetrics.emails_enviados_semana + mockComunicacaoMetrics.whatsapp_enviados_semana}
+          </p>
+          <div className="space-y-2">
+            {[
+              { label: "E-mail", count: mockComunicacaoMetrics.emails_enviados_semana, color: "bg-blue-500" },
+              { label: "WhatsApp", count: mockComunicacaoMetrics.whatsapp_enviados_semana, color: "bg-emerald-500" },
+            ].map((item) => {
+              const total = mockComunicacaoMetrics.emails_enviados_semana + mockComunicacaoMetrics.whatsapp_enviados_semana;
+              const pct = Math.round((item.count / total) * 100);
+              return (
+                <div key={item.label}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-500">{item.label}</span>
+                    <span className="font-medium text-slate-700">{item.count} ({pct}%)</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-1.5">
+                    <div className={`${item.color} h-1.5 rounded-full`} style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 

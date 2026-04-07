@@ -133,3 +133,17 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
 }
+
+export interface ComunicacaoMetrics {
+  emails_enviados_semana: number;
+  whatsapp_enviados_semana: number;
+  emails_abertos_semana: number;
+  whatsapp_respondidos_semana: number;
+  taxa_abertura_email: number;
+  taxa_resposta_whatsapp: number;
+  por_dia: {
+    dia: string;
+    emails: number;
+    whatsapp: number;
+  }[];
+}
