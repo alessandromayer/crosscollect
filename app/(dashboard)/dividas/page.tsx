@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { formatCurrency, formatDate, getStatusLabel } from "@/lib/utils";
 import { useTranslations } from "next-intl";
+import { useCotacoes, getBid } from "@/hooks/use-cotacoes";
 import type { Debt } from "@/types";
 
 const statusBadgeClass: Record<string, string> = {
@@ -37,6 +38,7 @@ const statusDot: Record<string, string> = {
 export default function DividasPage() {
   const t = useTranslations("debts");
   const tc = useTranslations("common");
+  const { cotacoes } = useCotacoes();
   const [debts, setDebts] = useState<Debt[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -207,7 +209,19 @@ export default function DividasPage() {
                     </td>
                     <td className="px-4 py-4 text-right">
                       <p className="font-semibold text-slate-900 text-sm">{formatCurrency(debt.valor_original, debt.moeda_original)}</p>
-                      <p className="text-slate-400 text-xs">{formatCurrency(debt.valor_brl)}</p>
+                      <p className="text-slate-400 text-xs">{formatCurrency(debt.valor_brl)} BRL</p>
+                      {(() => {
+                        const bid = getBid(cotacoes, debt.moeda_original);
+                        if (bid > 0 && debt.moeda_original !== "BRL") {
+                          const liveVal = debt.valor_brl / bid;
+                          return (
+                            <p className="text-blue-500 text-xs font-medium">
+                              ≈ {formatCurrency(liveVal, debt.moeda_original)} hoje
+                            </p>
+                          );
+                        }
+                        return null;
+                      })()}
                     </td>
                     <td className="px-4 py-4 text-center">
                       <span className="inline-flex items-center px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-semibold rounded-md">{debt.moeda_original}</span>

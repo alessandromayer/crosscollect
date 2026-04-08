@@ -18,6 +18,8 @@ import {
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { formatCurrency, formatDate, getStatusLabel } from "@/lib/utils";
+import { CotacoesPanel } from "@/components/cotacoes-panel";
+import { useCotacoes, getBid } from "@/hooks/use-cotacoes";
 import type { DashboardMetrics } from "@/types";
 
 const statusBadgeClass: Record<string, string> = {
@@ -36,6 +38,7 @@ function MetricCard({
   trendValue,
   icon: Icon,
   color,
+  conversions,
 }: {
   title: string;
   value: string;
@@ -44,6 +47,7 @@ function MetricCard({
   trendValue?: string;
   icon: React.ComponentType<{ className?: string }>;
   color: "blue" | "green" | "orange" | "purple";
+  conversions?: { code: string; value: string }[];
 }) {
   const colorMap = {
     blue: "bg-blue-50 text-blue-600",
@@ -73,6 +77,16 @@ function MetricCard({
         <p className="text-slate-500 text-sm font-medium mb-1">{title}</p>
         <p className="text-2xl font-bold text-slate-900">{value}</p>
         {subtitle && <p className="text-slate-400 text-xs mt-1">{subtitle}</p>}
+        {conversions && conversions.length > 0 && (
+          <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex flex-col gap-1">
+            {conversions.map(({ code, value: v }) => (
+              <div key={code} className="flex items-center justify-between">
+                <span className="text-xs text-slate-400">{code}</span>
+                <span className="text-xs font-semibold text-slate-600">{v}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -91,7 +105,7 @@ interface RecentDebt {
 
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
-  const tc = useTranslations("common");
+  const { cotacoes } = useCotacoes();
 
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [recentDebts, setRecentDebts] = useState<RecentDebt[]>([]);
@@ -111,6 +125,15 @@ export default function DashboardPage() {
     recuperado_mes: 0, recuperado_mes_brl: 0,
     taxa_sucesso: 0, casos_ativos: 0, casos_vencidos: 0, variacao_mensal: 0,
   };
+
+  // Live-rate conversions of the BRL open balance
+  const openBalanceConversions = cotacoes
+    ? [
+        { code: "USD", value: formatCurrency(m.total_em_aberto_brl / getBid(cotacoes, "USD"), "USD") },
+        { code: "EUR", value: formatCurrency(m.total_em_aberto_brl / getBid(cotacoes, "EUR"), "EUR") },
+        { code: "GBP", value: formatCurrency(m.total_em_aberto_brl / getBid(cotacoes, "GBP"), "GBP") },
+      ]
+    : undefined;
 
   const chartData = [
     { mes: "Oct", valor: 0 },
@@ -139,16 +162,20 @@ export default function DashboardPage() {
         </Link>
       </div>
 
+      {/* Live exchange rates strip */}
+      <CotacoesPanel />
+
       {/* Metrics */}
       <div className="grid grid-cols-4 gap-5 mb-8">
         <MetricCard
           title={t("metrics.openBalance")}
-          value={formatCurrency(m.total_em_aberto, "USD")}
+          value={formatCurrency(m.total_em_aberto_brl)}
           subtitle={t("metrics.openBalanceSub", { value: formatCurrency(m.total_em_aberto_brl) })}
           trend="up"
           trendValue="+8.2%"
           icon={DollarSign}
           color="blue"
+          conversions={openBalanceConversions}
         />
         <MetricCard
           title={t("metrics.recoveredMonth")}
@@ -263,38 +290,48 @@ export default function DashboardPage() {
           </Link>
         </div>
         <div className="divide-y divide-slate-50">
-          {recentDebts.map((debt) => (
-            <Link
-              key={debt.id}
-              href={`/dividas/${debt.id}`}
-              className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-colors group"
-            >
-              <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center flex-shrink-0">
-                <span className="text-slate-600 font-bold text-sm">{debt.devedor_nome.charAt(0)}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-slate-900 text-sm truncate group-hover:text-blue-600 transition-colors">
-                  {debt.devedor_nome}
-                </p>
-                <p className="text-slate-400 text-xs truncate">{debt.descricao}</p>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <p className="font-semibold text-slate-900 text-sm">
-                  {formatCurrency(Number(debt.valor), debt.moeda)}
-                </p>
-                <p className="text-slate-400 text-xs">{formatCurrency(Number(debt.valor_brl))}</p>
-              </div>
-              <div className="flex-shrink-0">
-                <span className={`inline-flex text-xs font-medium px-2.5 py-1 rounded-full ${statusBadgeClass[debt.status]}`}>
-                  {getStatusLabel(debt.status)}
-                </span>
-              </div>
-              <div className="flex items-center gap-1 text-slate-400 text-xs flex-shrink-0">
-                <Clock className="w-3 h-3" />
-                {debt.data_vencimento ? formatDate(debt.data_vencimento) : "—"}
-              </div>
-            </Link>
-          ))}
+          {recentDebts.map((debt) => {
+            const liveBid = getBid(cotacoes, debt.moeda);
+            const liveValue = liveBid > 0 ? Number(debt.valor_brl) / liveBid : null;
+
+            return (
+              <Link
+                key={debt.id}
+                href={`/dividas/${debt.id}`}
+                className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-colors group"
+              >
+                <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <span className="text-slate-600 font-bold text-sm">{debt.devedor_nome.charAt(0)}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-slate-900 text-sm truncate group-hover:text-blue-600 transition-colors">
+                    {debt.devedor_nome}
+                  </p>
+                  <p className="text-slate-400 text-xs truncate">{debt.descricao}</p>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className="font-semibold text-slate-900 text-sm">
+                    {formatCurrency(Number(debt.valor), debt.moeda)}
+                  </p>
+                  <p className="text-slate-400 text-xs">{formatCurrency(Number(debt.valor_brl))}</p>
+                  {liveValue !== null && debt.moeda !== "BRL" && (
+                    <p className="text-blue-500 text-xs">
+                      ≈ {formatCurrency(liveValue, debt.moeda)} atual
+                    </p>
+                  )}
+                </div>
+                <div className="flex-shrink-0">
+                  <span className={`inline-flex text-xs font-medium px-2.5 py-1 rounded-full ${statusBadgeClass[debt.status]}`}>
+                    {getStatusLabel(debt.status)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 text-slate-400 text-xs flex-shrink-0">
+                  <Clock className="w-3 h-3" />
+                  {debt.data_vencimento ? formatDate(debt.data_vencimento) : "—"}
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
 
