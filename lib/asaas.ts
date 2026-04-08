@@ -1,4 +1,4 @@
-const ASAAS_BASE_URL = "https://sandbox.asaas.com/api/v3";
+const ASAAS_BASE_URL = "https://www.asaas.com/api/v3";
 
 function asaasHeaders() {
   const key = process.env.ASAAS_API_KEY;
