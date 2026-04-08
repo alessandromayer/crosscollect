@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ChevronLeft,
@@ -27,10 +27,9 @@ import {
   ExternalLink,
   Loader2,
 } from "lucide-react";
-import { mockDebts } from "@/lib/mock-data";
 import { formatCurrency, formatDate, formatDateRelative, getStatusLabel } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import type { TimelineEvent } from "@/types";
+import type { Debt, TimelineEvent } from "@/types";
 
 const statusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
   pendente: { label: "Pendente", bg: "bg-yellow-50", text: "text-yellow-700", dot: "bg-yellow-400" },
@@ -115,9 +114,32 @@ export default function DebtDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const debt = mockDebts.find((d) => d.id === id);
+  const [debt, setDebt] = useState<Debt | null>(null);
+  const [debtLoading, setDebtLoading] = useState(true);
   const [newNote, setNewNote] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string>(debt?.status || "pendente");
+  const [selectedStatus, setSelectedStatus] = useState<string>("pendente");
+
+  useEffect(() => {
+    fetch(`/api/dividas/${id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.id) {
+          setDebt(data);
+          setSelectedStatus(data.status);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setDebtLoading(false));
+
+    // Load saved Asaas payment if exists
+    fetch(`/api/dividas/${id}/pagamento`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.boleto || data?.pix) setAsaasData(data);
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   // Asaas payment state
   const [asaasLoading, setAsaasLoading] = useState(false);
@@ -167,6 +189,41 @@ export default function DebtDetailPage({
       setCopiedPix(true);
       setTimeout(() => setCopiedPix(false), 2000);
     }
+  }
+
+  async function saveStatus() {
+    if (!debt) return;
+    await fetch(`/api/dividas/${debt.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: selectedStatus }),
+    });
+    setDebt({ ...debt, status: selectedStatus as Debt["status"] });
+  }
+
+  async function addNote() {
+    if (!debt || !newNote.trim()) return;
+    await fetch(`/api/dividas/${debt.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nota: newNote }),
+    });
+    setNewNote("");
+    // Refresh debt to get new timeline
+    fetch(`/api/dividas/${id}`)
+      .then((r) => r.json())
+      .then((data) => { if (data?.id) setDebt(data); });
+  }
+
+  if (debtLoading) {
+    return (
+      <div className="p-8 flex items-center justify-center h-full">
+        <div className="text-center text-slate-400">
+          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          Carregando...
+        </div>
+      </div>
+    );
   }
 
   if (!debt) {
@@ -365,7 +422,7 @@ export default function DebtDetailPage({
                 {newNote && (
                   <div className="flex justify-end mt-2">
                     <button
-                      onClick={() => setNewNote("")}
+                      onClick={addNote}
                       className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all"
                     >
                       Adicionar
@@ -406,7 +463,10 @@ export default function DebtDetailPage({
               ))}
             </div>
             {selectedStatus !== debt.status && (
-              <button className="w-full mt-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all">
+              <button
+                onClick={saveStatus}
+                className="w-full mt-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all"
+              >
                 Salvar alteração
               </button>
             )}

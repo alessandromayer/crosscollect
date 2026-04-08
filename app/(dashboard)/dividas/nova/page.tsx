@@ -121,9 +121,38 @@ export default function NovaDividaPage() {
   async function handleSubmit() {
     setIsSubmitting(true);
     try {
-      const dividaId = `d_${Date.now()}`;
       const valorNum = parseFloat(divida.valor) || 0;
       const dataVencFormatted = divida.dataVencimento || new Date().toISOString().split("T")[0];
+
+      // 0. Save debt to Supabase first — get real ID
+      let dividaId = `d_${Date.now()}`; // fallback
+      try {
+        const saveRes = await fetch("/api/dividas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            devedor_nome: devedor.nome || "Devedor",
+            devedor_doc: devedor.cpf_cnpj || "00000000000",
+            devedor_email: devedor.email || null,
+            devedor_tel: devedor.telefone || null,
+            devedor_cidade: devedor.cidade || null,
+            devedor_estado: devedor.estado || null,
+            devedor_tipo: devedor.tipo,
+            descricao: divida.descricao || "Pendência financeira",
+            valor: valorNum,
+            moeda: divida.moeda,
+            data_vencimento: dataVencFormatted,
+            observacoes: divida.observacoes || null,
+            regime_cobranca: cobrancaSteps,
+          }),
+        });
+        if (saveRes.ok) {
+          const saved = await saveRes.json();
+          if (saved.id) dividaId = saved.id;
+        }
+      } catch (e) {
+        console.error("Erro ao salvar dívida no banco:", e);
+      }
 
       // Run collection rule + Asaas charge creation in parallel
       const [regraRes, asaasRes] = await Promise.allSettled([
@@ -160,6 +189,7 @@ export default function NovaDividaPage() {
             valor: valorNum,
             descricao: divida.descricao || "Pendência financeira",
             dataVencimento: dataVencFormatted,
+            divida_id: dividaId,
           }),
         }),
       ]);

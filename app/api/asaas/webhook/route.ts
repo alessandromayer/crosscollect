@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
-// Asaas webhook event payload (simplified)
 interface AsaasWebhookPayload {
   event: string;
   payment: {
@@ -13,53 +13,67 @@ interface AsaasWebhookPayload {
     status: string;
     paymentDate?: string;
     description?: string;
-    externalReference?: string; // We store our debt ID here when creating
+    externalReference?: string;
   };
 }
+
+const PAID_EVENTS = ["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"];
 
 export async function POST(req: NextRequest) {
   try {
     const payload = (await req.json()) as AsaasWebhookPayload;
     const { event, payment } = payload;
 
-    console.log(`[asaas/webhook] Event: ${event} | Payment: ${payment.id} | Status: ${payment.status}`);
-
-    // Events that indicate full payment
-    const PAID_EVENTS = [
-      "PAYMENT_RECEIVED",
-      "PAYMENT_CONFIRMED",
-    ];
-
-    // Events that indicate failure or reversal
-    const FAILED_EVENTS = [
-      "PAYMENT_OVERDUE",
-      "PAYMENT_DELETED",
-      "PAYMENT_CHARGEBACK_DISPUTE",
-      "PAYMENT_CHARGEBACK_REQUESTED",
-    ];
+    console.log(`[asaas/webhook] ${event} | ${payment.id} | ${payment.status}`);
 
     if (PAID_EVENTS.includes(event)) {
-      // In a real app, look up the debt by payment.externalReference or payment.id
-      // and update its status to "pago" in the database.
-      // Example with Supabase:
-      //   await supabase
-      //     .from("debts")
-      //     .update({ status: "pago", asaas_payment_id: payment.id })
-      //     .eq("asaas_payment_id", payment.id);
-      console.log(
-        `[asaas/webhook] Payment ${payment.id} CONFIRMED — R$ ${payment.netValue ?? payment.value} received on ${payment.paymentDate}`
-      );
-    } else if (FAILED_EVENTS.includes(event)) {
-      console.log(`[asaas/webhook] Payment ${payment.id} event: ${event}`);
-    } else {
-      console.log(`[asaas/webhook] Unhandled event: ${event}`);
+      const db = getSupabaseAdmin();
+
+      // Find the pagamento row by Asaas payment ID (boleto or pix)
+      const { data: pagamento } = await db
+        .from("pagamentos_asaas")
+        .select("id, divida_id")
+        .or(
+          `asaas_payment_id_boleto.eq.${payment.id},asaas_payment_id_pix.eq.${payment.id}`
+        )
+        .single();
+
+      if (pagamento) {
+        // Mark pagamento as paid
+        if (payment.billingType === "BOLETO") {
+          await db
+            .from("pagamentos_asaas")
+            .update({ status_boleto: "RECEIVED", pago_em: new Date().toISOString() })
+            .eq("id", pagamento.id);
+        } else {
+          await db
+            .from("pagamentos_asaas")
+            .update({ status_pix: "RECEIVED", pago_em: new Date().toISOString() })
+            .eq("id", pagamento.id);
+        }
+
+        // Mark the debt as paid
+        await db
+          .from("dividas")
+          .update({ status: "pago", pago_em: new Date().toISOString() })
+          .eq("id", pagamento.divida_id);
+
+        // Log in timeline
+        await db.from("historico_acoes").insert({
+          divida_id: pagamento.divida_id,
+          tipo: "pagamento",
+          descricao: `Pagamento confirmado via ${payment.billingType} — R$ ${payment.netValue ?? payment.value}`,
+          valor: payment.netValue ?? payment.value,
+          autor: "Asaas Webhook",
+        });
+
+        console.log(`[asaas/webhook] Debt ${pagamento.divida_id} marked as PAID`);
+      }
     }
 
-    // Asaas expects HTTP 200 to acknowledge receipt
     return NextResponse.json({ received: true });
   } catch (err) {
-    console.error("[asaas/webhook] Error processing webhook:", err);
-    // Return 200 anyway to prevent Asaas from retrying on our parse error
-    return NextResponse.json({ received: true, error: "parse error" });
+    console.error("[asaas/webhook] Error:", err);
+    return NextResponse.json({ received: true });
   }
 }

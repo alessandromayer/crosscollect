@@ -16,8 +16,9 @@ import {
   BarChart3,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { mockMetrics, mockDebts, mockComunicacaoMetrics } from "@/lib/mock-data";
+import { useState, useEffect } from "react";
 import { formatCurrency, formatDate, getStatusLabel } from "@/lib/utils";
+import type { DashboardMetrics } from "@/types";
 
 const statusBadgeClass: Record<string, string> = {
   pendente: "bg-yellow-50 text-yellow-700 border border-yellow-100",
@@ -77,20 +78,49 @@ function MetricCard({
   );
 }
 
+interface RecentDebt {
+  id: string;
+  devedor_nome: string;
+  descricao: string;
+  valor: number;
+  moeda: string;
+  valor_brl: number;
+  data_vencimento: string;
+  status: string;
+}
+
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
   const tc = useTranslations("common");
-  const recentDebts = mockDebts.slice(0, 5);
+
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [recentDebts, setRecentDebts] = useState<RecentDebt[]>([]);
+
+  useEffect(() => {
+    fetch("/api/dashboard/metrics")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.metrics) setMetrics(data.metrics);
+        if (data.recentDebts) setRecentDebts(data.recentDebts);
+      })
+      .catch(() => {});
+  }, []);
+
+  const m = metrics ?? {
+    total_em_aberto: 0, total_em_aberto_brl: 0,
+    recuperado_mes: 0, recuperado_mes_brl: 0,
+    taxa_sucesso: 0, casos_ativos: 0, casos_vencidos: 0, variacao_mensal: 0,
+  };
 
   const chartData = [
-    { mes: "Oct", valor: 48000 },
-    { mes: "Nov", valor: 62000 },
-    { mes: "Dec", valor: 55000 },
-    { mes: "Jan", valor: 78000 },
-    { mes: "Feb", valor: 91000 },
-    { mes: "Mar", valor: 125000 },
+    { mes: "Oct", valor: 0 },
+    { mes: "Nov", valor: 0 },
+    { mes: "Dec", valor: 0 },
+    { mes: "Jan", valor: 0 },
+    { mes: "Feb", valor: 0 },
+    { mes: "Mar", valor: m.recuperado_mes_brl },
   ];
-  const maxVal = Math.max(...chartData.map((d) => d.valor));
+  const maxVal = Math.max(...chartData.map((d) => d.valor), 1);
 
   return (
     <div className="p-8">
@@ -113,8 +143,8 @@ export default function DashboardPage() {
       <div className="grid grid-cols-4 gap-5 mb-8">
         <MetricCard
           title={t("metrics.openBalance")}
-          value={formatCurrency(mockMetrics.total_em_aberto, "USD")}
-          subtitle={t("metrics.openBalanceSub", { value: formatCurrency(mockMetrics.total_em_aberto_brl) })}
+          value={formatCurrency(m.total_em_aberto, "USD")}
+          subtitle={t("metrics.openBalanceSub", { value: formatCurrency(m.total_em_aberto_brl) })}
           trend="up"
           trendValue="+8.2%"
           icon={DollarSign}
@@ -122,16 +152,16 @@ export default function DashboardPage() {
         />
         <MetricCard
           title={t("metrics.recoveredMonth")}
-          value={formatCurrency(mockMetrics.recuperado_mes, "USD")}
-          subtitle={`≈ ${formatCurrency(mockMetrics.recuperado_mes_brl)}`}
+          value={formatCurrency(m.recuperado_mes, "USD")}
+          subtitle={`≈ ${formatCurrency(m.recuperado_mes_brl)}`}
           trend="up"
-          trendValue={`+${mockMetrics.variacao_mensal}%`}
+          trendValue={`+${m.variacao_mensal}%`}
           icon={TrendingUp}
           color="green"
         />
         <MetricCard
           title={t("metrics.successRate")}
-          value={`${mockMetrics.taxa_sucesso}%`}
+          value={`${m.taxa_sucesso}%`}
           subtitle={t("metrics.successRateSub")}
           trend="up"
           trendValue="+3.1%"
@@ -140,8 +170,8 @@ export default function DashboardPage() {
         />
         <MetricCard
           title={t("metrics.activeCases")}
-          value={String(mockMetrics.casos_ativos)}
-          subtitle={t("metrics.activeCasesSub", { count: mockMetrics.casos_vencidos })}
+          value={String(m.casos_ativos)}
+          subtitle={t("metrics.activeCasesSub", { count: m.casos_vencidos })}
           icon={FileText}
           color="orange"
         />
@@ -240,19 +270,19 @@ export default function DashboardPage() {
               className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-colors group"
             >
               <div className="w-10 h-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center flex-shrink-0">
-                <span className="text-slate-600 font-bold text-sm">{debt.devedor.nome.charAt(0)}</span>
+                <span className="text-slate-600 font-bold text-sm">{debt.devedor_nome.charAt(0)}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-slate-900 text-sm truncate group-hover:text-blue-600 transition-colors">
-                  {debt.devedor.nome}
+                  {debt.devedor_nome}
                 </p>
                 <p className="text-slate-400 text-xs truncate">{debt.descricao}</p>
               </div>
               <div className="text-right flex-shrink-0">
                 <p className="font-semibold text-slate-900 text-sm">
-                  {formatCurrency(debt.valor_original, debt.moeda_original)}
+                  {formatCurrency(Number(debt.valor), debt.moeda)}
                 </p>
-                <p className="text-slate-400 text-xs">{formatCurrency(debt.valor_brl)}</p>
+                <p className="text-slate-400 text-xs">{formatCurrency(Number(debt.valor_brl))}</p>
               </div>
               <div className="flex-shrink-0">
                 <span className={`inline-flex text-xs font-medium px-2.5 py-1 rounded-full ${statusBadgeClass[debt.status]}`}>
@@ -261,7 +291,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-1 text-slate-400 text-xs flex-shrink-0">
                 <Clock className="w-3 h-3" />
-                {formatDate(debt.data_vencimento)}
+                {debt.data_vencimento ? formatDate(debt.data_vencimento) : "—"}
               </div>
             </Link>
           ))}
@@ -280,18 +310,18 @@ export default function DashboardPage() {
               <p className="text-xs text-slate-400">{t("communications.thisWeek")}</p>
             </div>
           </div>
-          <p className="text-3xl font-bold text-slate-900 mb-1">{mockComunicacaoMetrics.emails_enviados_semana}</p>
+          <p className="text-3xl font-bold text-slate-900 mb-1">{0}</p>
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-xs text-slate-500">{mockComunicacaoMetrics.emails_abertos_semana} {t("communications.opened")}</span>
+            <span className="text-xs text-slate-500">{0} {t("communications.opened")}</span>
             <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
-              {mockComunicacaoMetrics.taxa_abertura_email}% {t("communications.openRate")}
+              {0}% {t("communications.openRate")}
             </span>
           </div>
           <div className="flex items-end gap-1 h-10">
-            {mockComunicacaoMetrics.por_dia.map((d) => (
-              <div key={d.dia} className="flex-1 flex flex-col items-center gap-0.5">
-                <div className="w-full bg-blue-200 hover:bg-blue-400 rounded-sm transition-colors" style={{ height: `${(d.emails / 10) * 36}px`, minHeight: "3px" }} />
-                <span className="text-[9px] text-slate-400">{d.dia[0]}</span>
+            {["S","T","Q","Q","S"].map((d) => (
+              <div key={d} className="flex-1 flex flex-col items-center gap-0.5">
+                <div className="w-full bg-blue-100 rounded-sm" style={{ height: "3px" }} />
+                <span className="text-[9px] text-slate-400">{d}</span>
               </div>
             ))}
           </div>
@@ -307,18 +337,18 @@ export default function DashboardPage() {
               <p className="text-xs text-slate-400">{t("communications.thisWeek")}</p>
             </div>
           </div>
-          <p className="text-3xl font-bold text-slate-900 mb-1">{mockComunicacaoMetrics.whatsapp_enviados_semana}</p>
+          <p className="text-3xl font-bold text-slate-900 mb-1">{0}</p>
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-xs text-slate-500">{mockComunicacaoMetrics.whatsapp_respondidos_semana} {t("communications.replies")}</span>
+            <span className="text-xs text-slate-500">{0} {t("communications.replies")}</span>
             <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
-              {mockComunicacaoMetrics.taxa_resposta_whatsapp}% {t("communications.replyRate")}
+              {0}% {t("communications.replyRate")}
             </span>
           </div>
           <div className="flex items-end gap-1 h-10">
-            {mockComunicacaoMetrics.por_dia.map((d) => (
-              <div key={d.dia} className="flex-1 flex flex-col items-center gap-0.5">
-                <div className="w-full bg-emerald-200 hover:bg-emerald-400 rounded-sm transition-colors" style={{ height: `${(d.whatsapp / 10) * 36}px`, minHeight: "3px" }} />
-                <span className="text-[9px] text-slate-400">{d.dia[0]}</span>
+            {["S","T","Q","Q","S"].map((d) => (
+              <div key={d} className="flex-1 flex flex-col items-center gap-0.5">
+                <div className="w-full bg-emerald-100 rounded-sm" style={{ height: "3px" }} />
+                <span className="text-[9px] text-slate-400">{d}</span>
               </div>
             ))}
           </div>
@@ -335,14 +365,14 @@ export default function DashboardPage() {
             </div>
           </div>
           <p className="text-3xl font-bold text-slate-900 mb-4">
-            {mockComunicacaoMetrics.emails_enviados_semana + mockComunicacaoMetrics.whatsapp_enviados_semana}
+            {0 + 0}
           </p>
           <div className="space-y-2">
             {[
-              { label: "Email", count: mockComunicacaoMetrics.emails_enviados_semana, color: "bg-blue-500" },
-              { label: "WhatsApp", count: mockComunicacaoMetrics.whatsapp_enviados_semana, color: "bg-emerald-500" },
+              { label: "Email", count: 0, color: "bg-blue-500" },
+              { label: "WhatsApp", count: 0, color: "bg-emerald-500" },
             ].map((item) => {
-              const total = mockComunicacaoMetrics.emails_enviados_semana + mockComunicacaoMetrics.whatsapp_enviados_semana;
+              const total = 0 + 0;
               const pct = Math.round((item.count / total) * 100);
               return (
                 <div key={item.label}>
@@ -365,7 +395,7 @@ export default function DashboardPage() {
         <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
         <div>
           <p className="font-semibold text-amber-900 text-sm">
-            {t("alert.title", { count: mockMetrics.casos_vencidos })}
+            {t("alert.title", { count: m.casos_vencidos })}
           </p>
           <p className="text-amber-700 text-sm mt-0.5">{t("alert.sub")}</p>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Plus,
@@ -12,10 +12,10 @@ import {
   MoreHorizontal,
   FileText,
   Download,
+  Loader2,
 } from "lucide-react";
-import { mockDebts } from "@/lib/mock-data";
 import { formatCurrency, formatDate, getStatusLabel } from "@/lib/utils";
-import type { DebtStatus } from "@/types";
+import type { Debt } from "@/types";
 
 const statusBadgeClass: Record<string, string> = {
   pendente: "bg-yellow-50 text-yellow-700 border border-yellow-200",
@@ -33,7 +33,7 @@ const statusDot: Record<string, string> = {
   cancelado: "bg-slate-400",
 };
 
-const statusFilters: { label: string; value: string }[] = [
+const statusFilters = [
   { label: "Todas", value: "all" },
   { label: "Pendentes", value: "pendente" },
   { label: "Em Negociação", value: "em_negociacao" },
@@ -42,15 +42,25 @@ const statusFilters: { label: string; value: string }[] = [
 ];
 
 export default function DividasPage() {
+  const [debts, setDebts] = useState<Debt[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState<"valor" | "data" | "nome">("data");
 
-  const filtered = mockDebts.filter((d) => {
+  useEffect(() => {
+    fetch("/api/dividas")
+      .then((r) => r.json())
+      .then((data) => setDebts(Array.isArray(data) ? data : []))
+      .catch(() => setDebts([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = debts.filter((d) => {
+    const q = search.toLowerCase();
     const matchSearch =
-      d.devedor.nome.toLowerCase().includes(search.toLowerCase()) ||
-      d.descricao.toLowerCase().includes(search.toLowerCase()) ||
-      d.devedor.cpf_cnpj.includes(search);
+      d.devedor.nome.toLowerCase().includes(q) ||
+      d.descricao.toLowerCase().includes(q) ||
+      d.devedor.cpf_cnpj.includes(q);
     const matchStatus = statusFilter === "all" || d.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -66,7 +76,7 @@ export default function DividasPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Dívidas</h1>
           <p className="text-slate-500 mt-0.5">
-            {filtered.length} registros encontrados · {formatCurrency(totalAberto)} em aberto
+            {loading ? "Carregando..." : `${filtered.length} registros · ${formatCurrency(totalAberto)} em aberto`}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -87,7 +97,6 @@ export default function DividasPage() {
       {/* Filters */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 mb-6">
         <div className="px-6 py-4 flex items-center gap-4 border-b border-slate-100">
-          {/* Search */}
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
@@ -98,8 +107,6 @@ export default function DividasPage() {
               className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-
-          {/* Sort */}
           <div className="flex items-center gap-2 ml-auto">
             <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-all">
               <Filter className="w-3.5 h-3.5" />
@@ -127,12 +134,8 @@ export default function DividasPage() {
             >
               {f.label}
               {f.value !== "all" && (
-                <span
-                  className={`ml-1.5 text-xs ${
-                    statusFilter === f.value ? "text-blue-200" : "text-slate-400"
-                  }`}
-                >
-                  {mockDebts.filter((d) => d.status === f.value).length}
+                <span className={`ml-1.5 text-xs ${statusFilter === f.value ? "text-blue-200" : "text-slate-400"}`}>
+                  {debts.filter((d) => d.status === f.value).length}
                 </span>
               )}
             </button>
@@ -142,130 +145,105 @@ export default function DividasPage() {
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-slate-100 bg-slate-50/50">
-              <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                Devedor
-              </th>
-              <th className="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                Descrição
-              </th>
-              <th className="text-right px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                Valor
-              </th>
-              <th className="text-center px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                Moeda
-              </th>
-              <th className="text-center px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                Vencimento
-              </th>
-              <th className="text-center px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                Status
-              </th>
-              <th className="px-4 py-3.5"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-50">
-            {filtered.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="text-center py-16">
-                  <FileText className="w-10 h-10 text-slate-200 mx-auto mb-3" />
-                  <p className="text-slate-400 font-medium">Nenhuma dívida encontrada</p>
-                  <p className="text-slate-300 text-sm mt-1">Tente ajustar os filtros ou adicione uma nova dívida</p>
-                </td>
+        {loading ? (
+          <div className="flex items-center justify-center gap-2 py-20 text-slate-400">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Carregando dívidas...
+          </div>
+        ) : (
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50/50">
+                <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Devedor</th>
+                <th className="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Descrição</th>
+                <th className="text-right px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Valor</th>
+                <th className="text-center px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Moeda</th>
+                <th className="text-center px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Vencimento</th>
+                <th className="text-center px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+                <th className="px-4 py-3.5"></th>
               </tr>
-            ) : (
-              filtered.map((debt) => (
-                <tr key={debt.id} className="hover:bg-slate-50/60 transition-colors group">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <span className="text-slate-600 font-bold text-sm">
-                          {debt.devedor.nome.charAt(0)}
-                        </span>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-slate-900 text-sm truncate max-w-[180px]">
-                          {debt.devedor.nome}
-                        </p>
-                        <p className="text-slate-400 text-xs">{debt.devedor.cpf_cnpj}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <p className="text-slate-700 text-sm truncate max-w-[220px]">{debt.descricao}</p>
-                    <p className="text-slate-400 text-xs">{debt.devedor.cidade}/{debt.devedor.estado}</p>
-                  </td>
-                  <td className="px-4 py-4 text-right">
-                    <p className="font-semibold text-slate-900 text-sm">
-                      {formatCurrency(debt.valor_original, debt.moeda_original)}
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-16">
+                    <FileText className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+                    <p className="text-slate-400 font-medium">Nenhuma dívida encontrada</p>
+                    <p className="text-slate-300 text-sm mt-1">
+                      {debts.length === 0 ? "Cadastre sua primeira dívida" : "Tente ajustar os filtros"}
                     </p>
-                    <p className="text-slate-400 text-xs">{formatCurrency(debt.valor_brl)}</p>
-                  </td>
-                  <td className="px-4 py-4 text-center">
-                    <span className="inline-flex items-center px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-semibold rounded-md">
-                      {debt.moeda_original}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 text-center">
-                    <span
-                      className={`text-sm font-medium ${
-                        new Date(debt.data_vencimento) < new Date() && debt.status !== "pago"
-                          ? "text-red-600"
-                          : "text-slate-600"
-                      }`}
-                    >
-                      {formatDate(debt.data_vencimento)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 text-center">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusBadgeClass[debt.status]}`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full ${statusDot[debt.status]}`} />
-                      {getStatusLabel(debt.status)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Link
-                        href={`/dividas/${debt.id}`}
-                        className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                        title="Ver detalhes"
-                      >
-                        <Eye className="w-4 h-4" />
+                    {debts.length === 0 && (
+                      <Link href="/dividas/nova" className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl">
+                        <Plus className="w-4 h-4" />
+                        Nova Dívida
                       </Link>
-                      <button
-                        className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
-                        title="Mais opções"
-                      >
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-                    </div>
+                    )}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                filtered.map((debt) => (
+                  <tr key={debt.id} className="hover:bg-slate-50/60 transition-colors group">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center flex-shrink-0">
+                          <span className="text-slate-600 font-bold text-sm">{debt.devedor.nome.charAt(0)}</span>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-slate-900 text-sm truncate max-w-[180px]">{debt.devedor.nome}</p>
+                          <p className="text-slate-400 text-xs">{debt.devedor.cpf_cnpj}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <p className="text-slate-700 text-sm truncate max-w-[220px]">{debt.descricao}</p>
+                      {(debt.devedor.cidade || debt.devedor.estado) && (
+                        <p className="text-slate-400 text-xs">{[debt.devedor.cidade, debt.devedor.estado].filter(Boolean).join("/")}</p>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <p className="font-semibold text-slate-900 text-sm">{formatCurrency(debt.valor_original, debt.moeda_original)}</p>
+                      <p className="text-slate-400 text-xs">{formatCurrency(debt.valor_brl)}</p>
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <span className="inline-flex items-center px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-semibold rounded-md">{debt.moeda_original}</span>
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <span className={`text-sm font-medium ${new Date(debt.data_vencimento) < new Date() && debt.status !== "pago" ? "text-red-600" : "text-slate-600"}`}>
+                        {debt.data_vencimento ? formatDate(debt.data_vencimento) : "—"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-center">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusBadgeClass[debt.status]}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${statusDot[debt.status]}`} />
+                        {getStatusLabel(debt.status)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Link href={`/dividas/${debt.id}`} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Ver detalhes">
+                          <Eye className="w-4 h-4" />
+                        </Link>
+                        <button className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
 
-        {/* Pagination */}
         <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between">
           <p className="text-sm text-slate-500">
             Mostrando <span className="font-medium">{filtered.length}</span> de{" "}
-            <span className="font-medium">{mockDebts.length}</span> registros
+            <span className="font-medium">{debts.length}</span> registros
           </p>
           <div className="flex items-center gap-1">
-            <button className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 disabled:opacity-40 transition-all">
-              Anterior
-            </button>
-            <button className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg font-medium">
-              1
-            </button>
-            <button className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-all">
-              Próxima
-            </button>
+            <button className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 disabled:opacity-40 transition-all">Anterior</button>
+            <button className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg font-medium">1</button>
+            <button className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-all">Próxima</button>
           </div>
         </div>
       </div>
