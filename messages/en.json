@@ -455,6 +455,8 @@
     "placeholder": "Ask about collection strategies, debtor analysis, templates...",
     "send": "Send",
     "hint": "Enter to send · Shift+Enter for new line",
+    "welcome": "Hello! I'm the **CrossCollect Assistant**, specialized in international debt collection strategies for the Brazilian market.\n\nI can help you with:\n- 📊 **Portfolio analysis** — identify risks and opportunities\n- 💬 **Communication templates** — emails, WhatsApp, and letters\n- 🎯 **Negotiation strategies** — based on the debtor's profile\n- 📋 **Reports and insights** — about your recovery rate\n\nHow can I help you today?",
+    "quickActionsTitle": "Quick actions",
     "suggestions": {
       "s1": "Which debts have the highest default risk?",
       "s2": "Suggest a negotiation strategy for Carlos Mendonça",
@@ -464,9 +466,13 @@
     },
     "quickActions": {
       "analyze": "Analyze portfolio",
+      "analyzePrompt": "Analyze my collections portfolio and identify the main risks and opportunities.",
       "report": "Generate report",
+      "reportPrompt": "Generate a summary report of the current status of my collections.",
       "overdue": "Overdue debts",
-      "template": "Email template"
+      "overduePrompt": "What strategies do you recommend for debts that are already overdue?",
+      "template": "Email template",
+      "templatePrompt": "Create a professional email template for a friendly collection notice in English."
     },
     "context": {
       "title": "Current context",

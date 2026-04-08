@@ -455,6 +455,8 @@
     "placeholder": "Pergunte sobre estratégias de cobrança, análise de devedores, templates...",
     "send": "Enviar",
     "hint": "Enter para enviar · Shift+Enter para nova linha",
+    "welcome": "Olá! Sou o **Assistente CrossCollect**, especializado em estratégias de cobrança internacional para o mercado brasileiro.\n\nPosso ajudá-lo com:\n- 📊 **Análise da carteira** — identificar riscos e oportunidades\n- 💬 **Templates de comunicação** — e-mails, WhatsApp e cartas\n- 🎯 **Estratégias de negociação** — baseadas no perfil do devedor\n- 📋 **Relatórios e insights** — sobre sua taxa de recuperação\n\nComo posso ajudá-lo hoje?",
+    "quickActionsTitle": "Ações rápidas",
     "suggestions": {
       "s1": "Quais dívidas têm maior risco de inadimplência?",
       "s2": "Sugira uma estratégia para negociar com Carlos Mendonça",
@@ -464,9 +466,13 @@
     },
     "quickActions": {
       "analyze": "Analisar carteira",
+      "analyzePrompt": "Analise minha carteira de cobranças e identifique os principais riscos e oportunidades.",
       "report": "Gerar relatório",
+      "reportPrompt": "Gere um relatório resumido da situação atual das minhas cobranças.",
       "overdue": "Dívidas vencidas",
-      "template": "Template de e-mail"
+      "overduePrompt": "Quais estratégias você recomenda para as dívidas que já venceram?",
+      "template": "Template de e-mail",
+      "templatePrompt": "Crie um template de e-mail profissional para cobrança amigável em português."
     },
     "context": {
       "title": "Contexto atual",

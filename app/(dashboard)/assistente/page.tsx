@@ -14,39 +14,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { ChatMessage } from "@/types";
-
-const SUGGESTIONS = [
-  "Quais dívidas têm maior risco de inadimplência?",
-  "Sugira uma estratégia para negociar com Carlos Mendonça Ltda",
-  "Como melhorar minha taxa de recuperação?",
-  "Quais devedores devo priorizar esta semana?",
-  "Gere um modelo de e-mail de cobrança formal",
-];
-
-const QUICK_ACTIONS = [
-  { icon: TrendingUp, label: "Analisar carteira", prompt: "Analise minha carteira de cobranças e identifique os principais riscos e oportunidades." },
-  { icon: FileText, label: "Gerar relatório", prompt: "Gere um relatório resumido da situação atual das minhas cobranças." },
-  { icon: AlertCircle, label: "Dívidas vencidas", prompt: "Quais estratégias você recomenda para as dívidas que já venceram?" },
-  { icon: MessageSquare, label: "Template de e-mail", prompt: "Crie um template de e-mail profissional para cobrança amigável em português." },
-];
-
-const initialMessages: ChatMessage[] = [
-  {
-    id: "welcome",
-    role: "assistant",
-    content: `Olá! Sou o **Assistente CrossCollect**, especializado em estratégias de cobrança internacional para o mercado brasileiro.
-
-Posso ajudá-lo com:
-- 📊 **Análise da carteira** — identificar riscos e oportunidades
-- 💬 **Templates de comunicação** — e-mails, WhatsApp e cartas
-- 🎯 **Estratégias de negociação** — baseadas no perfil do devedor
-- 📋 **Relatórios e insights** — sobre sua taxa de recuperação
-
-Como posso ajudá-lo hoje?`,
-    timestamp: new Date(),
-  },
-];
 
 function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
@@ -98,7 +67,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             isUser ? "text-blue-200" : "text-slate-400"
           )}
         >
-          {message.timestamp.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+          {message.timestamp.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
         </p>
       </div>
     </div>
@@ -106,11 +75,37 @@ function MessageBubble({ message }: { message: ChatMessage }) {
 }
 
 export default function AssistentePage() {
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const t = useTranslations("assistant");
+
+  function makeWelcome(): ChatMessage {
+    return {
+      id: "welcome",
+      role: "assistant",
+      content: t("welcome"),
+      timestamp: new Date(),
+    };
+  }
+
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [makeWelcome()]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const suggestions = [
+    t("suggestions.s1"),
+    t("suggestions.s2"),
+    t("suggestions.s3"),
+    t("suggestions.s4"),
+    t("suggestions.s5"),
+  ];
+
+  const quickActions = [
+    { icon: TrendingUp, label: t("quickActions.analyze"), prompt: t("quickActions.analyzePrompt") },
+    { icon: FileText, label: t("quickActions.report"), prompt: t("quickActions.reportPrompt") },
+    { icon: AlertCircle, label: t("quickActions.overdue"), prompt: t("quickActions.overduePrompt") },
+    { icon: MessageSquare, label: t("quickActions.template"), prompt: t("quickActions.templatePrompt") },
+  ];
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -142,7 +137,7 @@ export default function AssistentePage() {
         }),
       });
 
-      if (!response.ok) throw new Error("Erro na API");
+      if (!response.ok) throw new Error("API error");
 
       const data = await response.json();
 
@@ -155,29 +150,22 @@ export default function AssistentePage() {
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch {
-      // Fallback response for demo
-      const demoResponses: Record<string, string> = {
-        default: `Entendi sua solicitação. Com base na análise da sua carteira atual:
+      const fallback = `**Portfolio status:**
+- 43 active cases with R$ 4.2M open
+- 12 overdue debts need immediate attention
+- Current recovery rate: 68.4%
 
-**Situação geral:**
-- 43 casos ativos com R$ 4,2M em aberto
-- 12 dívidas vencidas precisam de atenção imediata
-- Taxa de recuperação atual: 68,4%
+**Recommendation:**
+To maximize recovery, I suggest prioritizing debts with the highest value and shortest delay time, combining WhatsApp messaging (45% higher response rate) with a progressive discount offer.
 
-**Recomendação:**
-Para maximizar a recuperação, sugiro priorizar as dívidas com maior valor e menor tempo de atraso, combinando comunicação por WhatsApp (canal com 45% mais resposta) com proposta de desconto progressivo.
-
-Posso elaborar uma estratégia específica para algum devedor em particular?`,
-      };
-
-      const fallbackContent = demoResponses.default;
+Can I elaborate a specific strategy for a particular debtor?`;
 
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: fallbackContent,
+          content: fallback,
           timestamp: new Date(),
         },
       ]);
@@ -195,7 +183,7 @@ Posso elaborar uma estratégia específica para algum devedor em particular?`,
   }
 
   function clearChat() {
-    setMessages(initialMessages);
+    setMessages([makeWelcome()]);
   }
 
   return (
@@ -208,13 +196,13 @@ Posso elaborar uma estratégia específica para algum devedor em particular?`,
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              Assistente CrossCollect
+              {t("title")}
               <span className="flex items-center gap-1 text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
                 <Sparkles className="w-3 h-3" />
-                IA
+                AI
               </span>
             </h1>
-            <p className="text-slate-400 text-sm">Powered by Claude · Especialista em cobrança no Brasil</p>
+            <p className="text-slate-400 text-sm">{t("subtitle")}</p>
           </div>
         </div>
 
@@ -223,7 +211,7 @@ Posso elaborar uma estratégia específica para algum devedor em particular?`,
           className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-500 hover:bg-slate-50 text-sm font-medium rounded-xl transition-all"
         >
           <RefreshCw className="w-3.5 h-3.5" />
-          Nova conversa
+          {t("newConversation")}
         </button>
       </div>
 
@@ -254,12 +242,12 @@ Posso elaborar uma estratégia específica para algum devedor em particular?`,
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input */}
+          {/* Input area */}
           <div className="flex-shrink-0 mt-4">
-            {/* Suggestions */}
+            {/* Suggestion chips */}
             {messages.length <= 1 && (
               <div className="flex gap-2 mb-3 overflow-x-auto pb-1">
-                {SUGGESTIONS.map((s) => (
+                {suggestions.map((s) => (
                   <button
                     key={s}
                     onClick={() => sendMessage(s)}
@@ -277,7 +265,7 @@ Posso elaborar uma estratégia específica para algum devedor em particular?`,
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Pergunte sobre estratégias de cobrança, análise de devedores, templates..."
+                placeholder={t("placeholder")}
                 rows={1}
                 className="flex-1 resize-none text-sm text-slate-900 placeholder-slate-400 focus:outline-none bg-transparent max-h-32 leading-relaxed"
                 style={{ fieldSizing: "content" } as React.CSSProperties}
@@ -286,12 +274,13 @@ Posso elaborar uma estratégia específica para algum devedor em particular?`,
                 onClick={() => sendMessage(input)}
                 disabled={!input.trim() || isLoading}
                 className="w-9 h-9 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 text-white rounded-xl flex items-center justify-center transition-all flex-shrink-0 self-end"
+                title={t("send")}
               >
                 <Send className="w-4 h-4" />
               </button>
             </div>
             <p className="text-xs text-slate-400 text-center mt-2">
-              Enter para enviar · Shift+Enter para nova linha
+              {t("hint")}
             </p>
           </div>
         </div>
@@ -300,9 +289,9 @@ Posso elaborar uma estratégia específica para algum devedor em particular?`,
         <div className="w-64 flex-shrink-0 space-y-5">
           {/* Quick actions */}
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-            <h4 className="text-sm font-semibold text-slate-700 mb-3">Ações rápidas</h4>
+            <h4 className="text-sm font-semibold text-slate-700 mb-3">{t("quickActionsTitle")}</h4>
             <div className="space-y-1.5">
-              {QUICK_ACTIONS.map((action) => (
+              {quickActions.map((action) => (
                 <button
                   key={action.label}
                   onClick={() => sendMessage(action.prompt)}
@@ -318,46 +307,46 @@ Posso elaborar uma estratégia específica para algum devedor em particular?`,
 
           {/* Context */}
           <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl p-4 border border-indigo-100">
-            <h4 className="text-sm font-semibold text-indigo-900 mb-2">Contexto atual</h4>
+            <h4 className="text-sm font-semibold text-indigo-900 mb-2">{t("context.title")}</h4>
             <div className="space-y-2 text-xs text-indigo-700">
               <div className="flex justify-between">
-                <span>Carteira ativa</span>
-                <span className="font-semibold">43 casos</span>
+                <span>{t("context.activePortfolio")}</span>
+                <span className="font-semibold">43</span>
               </div>
               <div className="flex justify-between">
-                <span>Em aberto</span>
+                <span>{t("context.open")}</span>
                 <span className="font-semibold">$ 847.500</span>
               </div>
               <div className="flex justify-between">
-                <span>Vencidas</span>
-                <span className="font-semibold text-red-600">12 dívidas</span>
+                <span>{t("context.overdue")}</span>
+                <span className="font-semibold text-red-600">12</span>
               </div>
               <div className="flex justify-between">
-                <span>Taxa sucesso</span>
-                <span className="font-semibold text-emerald-700">68,4%</span>
+                <span>{t("context.successRate")}</span>
+                <span className="font-semibold text-emerald-700">68.4%</span>
               </div>
             </div>
             <p className="text-xs text-indigo-500 mt-3">
-              O assistente usa esses dados para personalizar as respostas.
+              {t("context.note")}
             </p>
           </div>
 
           {/* Usage */}
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-sm font-semibold text-slate-700">Uso do plano</h4>
+              <h4 className="text-sm font-semibold text-slate-700">{t("usage.title")}</h4>
               <span className="text-xs text-slate-400">Growth</span>
             </div>
             <div className="mb-1.5">
               <div className="flex justify-between text-xs text-slate-500 mb-1">
-                <span>Mensagens</span>
+                <span>{t("usage.messages")}</span>
                 <span>312 / 1.000</span>
               </div>
               <div className="w-full bg-slate-100 rounded-full h-1.5">
                 <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: "31.2%" }} />
               </div>
             </div>
-            <p className="text-xs text-slate-400">Renova em 23 dias</p>
+            <p className="text-xs text-slate-400">{t("usage.renews", { days: 23 })}</p>
           </div>
         </div>
       </div>
