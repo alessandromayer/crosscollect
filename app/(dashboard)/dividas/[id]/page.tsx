@@ -22,6 +22,10 @@ import {
   DollarSign,
   Zap,
   Send,
+  QrCode,
+  Copy,
+  ExternalLink,
+  Loader2,
 } from "lucide-react";
 import { mockDebts } from "@/lib/mock-data";
 import { formatCurrency, formatDate, formatDateRelative, getStatusLabel } from "@/lib/utils";
@@ -114,6 +118,56 @@ export default function DebtDetailPage({
   const debt = mockDebts.find((d) => d.id === id);
   const [newNote, setNewNote] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>(debt?.status || "pendente");
+
+  // Asaas payment state
+  const [asaasLoading, setAsaasLoading] = useState(false);
+  const [asaasError, setAsaasError] = useState<string | null>(null);
+  const [asaasData, setAsaasData] = useState<{
+    boleto: { id: string; bankSlipUrl?: string; invoiceUrl?: string; linhaDigitavel: string };
+    pix: { id: string; qrCodeBase64: string; copiaCola: string };
+  } | null>(null);
+  const [copiedBoleto, setCopiedBoleto] = useState(false);
+  const [copiedPix, setCopiedPix] = useState(false);
+
+  async function gerarCobrancaAsaas() {
+    if (!debt) return;
+    setAsaasLoading(true);
+    setAsaasError(null);
+    try {
+      const res = await fetch("/api/asaas/criar-cobranca", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          devedor: {
+            nome: debt.devedor.nome,
+            cpf_cnpj: debt.devedor.cpf_cnpj,
+            email: debt.devedor.email,
+          },
+          valor: debt.valor_brl,
+          descricao: debt.descricao,
+          dataVencimento: debt.data_vencimento,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao gerar cobrança");
+      setAsaasData({ boleto: data.boleto, pix: data.pix });
+    } catch (err) {
+      setAsaasError(err instanceof Error ? err.message : "Erro desconhecido");
+    } finally {
+      setAsaasLoading(false);
+    }
+  }
+
+  function copyToClipboard(text: string, type: "boleto" | "pix") {
+    navigator.clipboard.writeText(text);
+    if (type === "boleto") {
+      setCopiedBoleto(true);
+      setTimeout(() => setCopiedBoleto(false), 2000);
+    } else {
+      setCopiedPix(true);
+      setTimeout(() => setCopiedPix(false), 2000);
+    }
+  }
 
   if (!debt) {
     return (
@@ -429,6 +483,104 @@ export default function DebtDetailPage({
                 WhatsApp
               </a>
             </div>
+          </div>
+
+          {/* Asaas Payment */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+            <div className="flex items-center gap-2 mb-4">
+              <QrCode className="w-4 h-4 text-blue-600" />
+              <h4 className="font-semibold text-slate-900 text-sm">Boleto & Pix</h4>
+            </div>
+
+            {!asaasData && !asaasLoading && (
+              <div>
+                <p className="text-xs text-slate-500 mb-3">
+                  Gere boleto bancário e QR code Pix para este devedor via Asaas.
+                </p>
+                {asaasError && (
+                  <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-3">
+                    {asaasError}
+                  </p>
+                )}
+                <button
+                  onClick={gerarCobrancaAsaas}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all"
+                >
+                  <QrCode className="w-4 h-4" />
+                  Gerar Boleto + Pix
+                </button>
+              </div>
+            )}
+
+            {asaasLoading && (
+              <div className="flex items-center justify-center gap-2 py-4 text-slate-500 text-sm">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Gerando cobranças no Asaas...
+              </div>
+            )}
+
+            {asaasData && (
+              <div className="space-y-4">
+                {/* Pix QR Code */}
+                <div>
+                  <p className="text-xs font-semibold text-slate-700 mb-2">QR Code Pix</p>
+                  {asaasData.pix.qrCodeBase64 && (
+                    <div className="flex justify-center mb-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`data:image/png;base64,${asaasData.pix.qrCodeBase64}`}
+                        alt="QR Code Pix"
+                        className="w-32 h-32 rounded-lg border border-slate-200"
+                      />
+                    </div>
+                  )}
+                  <button
+                    onClick={() => copyToClipboard(asaasData.pix.copiaCola, "pix")}
+                    className="w-full flex items-center justify-center gap-1.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-lg transition-all"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    {copiedPix ? "Copiado!" : "Copiar chave Pix"}
+                  </button>
+                </div>
+
+                <div className="border-t border-slate-100" />
+
+                {/* Boleto */}
+                <div>
+                  <p className="text-xs font-semibold text-slate-700 mb-2">Boleto Bancário</p>
+                  <p className="text-[10px] text-slate-400 font-mono break-all bg-slate-50 rounded-lg px-2 py-1.5 mb-2 leading-relaxed">
+                    {asaasData.boleto.linhaDigitavel}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => copyToClipboard(asaasData.boleto.linhaDigitavel, "boleto")}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-all"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      {copiedBoleto ? "Copiado!" : "Copiar"}
+                    </button>
+                    {(asaasData.boleto.bankSlipUrl || asaasData.boleto.invoiceUrl) && (
+                      <a
+                        href={asaasData.boleto.bankSlipUrl || asaasData.boleto.invoiceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded-lg transition-all"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        Abrir boleto
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => { setAsaasData(null); setAsaasError(null); }}
+                  className="w-full text-xs text-slate-400 hover:text-slate-600 transition-colors pt-1"
+                >
+                  Gerar nova cobrança
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Documents */}

@@ -85,6 +85,25 @@ export default function NovaDividaPage() {
     acoes: { tipo: string; subtipo: string; status: string; diasAposVencimento: number }[];
   } | null>(null);
 
+  // Asaas payment links state
+  const [asaasData, setAsaasData] = useState<{
+    boleto: { bankSlipUrl?: string; invoiceUrl?: string; linhaDigitavel: string };
+    pix: { qrCodeBase64: string; copiaCola: string };
+  } | null>(null);
+  const [copiedBoleto, setCopiedBoleto] = useState(false);
+  const [copiedPix, setCopiedPix] = useState(false);
+
+  function copyToClipboard(text: string, type: "boleto" | "pix") {
+    navigator.clipboard.writeText(text);
+    if (type === "boleto") {
+      setCopiedBoleto(true);
+      setTimeout(() => setCopiedBoleto(false), 2000);
+    } else {
+      setCopiedPix(true);
+      setTimeout(() => setCopiedPix(false), 2000);
+    }
+  }
+
   function nextStep() {
     if (step < 4) setStep(step + 1);
   }
@@ -102,40 +121,65 @@ export default function NovaDividaPage() {
   async function handleSubmit() {
     setIsSubmitting(true);
     try {
-      // Dispara a régua automática de cobrança
       const dividaId = `d_${Date.now()}`;
-      const res = await fetch("/api/cobranca/iniciar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          divida: {
-            id: dividaId,
-            descricao: divida.descricao || "Pendência financeira",
-            valor: divida.valor || "0",
-            moeda: divida.moeda,
-            dataVencimento: divida.dataVencimento
-              ? formatDate(divida.dataVencimento)
-              : "—",
-            linkPagamento: `${window.location.origin}/pagar/${dividaId}`,
-          },
-          devedor: {
-            nome: devedor.nome || "Devedor",
-            email: devedor.email || "",
-            telefone: devedor.telefone || "",
-          },
-          nomeCredor: "CrossCollect",
-          baseUrl: window.location.origin,
-        }),
-      });
+      const valorNum = parseFloat(divida.valor) || 0;
+      const dataVencFormatted = divida.dataVencimento || new Date().toISOString().split("T")[0];
 
-      if (res.ok) {
-        const data = await res.json();
+      // Run collection rule + Asaas charge creation in parallel
+      const [regraRes, asaasRes] = await Promise.allSettled([
+        fetch("/api/cobranca/iniciar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            divida: {
+              id: dividaId,
+              descricao: divida.descricao || "Pendência financeira",
+              valor: divida.valor || "0",
+              moeda: divida.moeda,
+              dataVencimento: divida.dataVencimento ? formatDate(divida.dataVencimento) : "—",
+              linkPagamento: `${window.location.origin}/pagar/${dividaId}`,
+            },
+            devedor: {
+              nome: devedor.nome || "Devedor",
+              email: devedor.email || "",
+              telefone: devedor.telefone || "",
+            },
+            nomeCredor: "CrossCollect",
+            baseUrl: window.location.origin,
+          }),
+        }),
+        fetch("/api/asaas/criar-cobranca", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            devedor: {
+              nome: devedor.nome || "Devedor",
+              cpf_cnpj: devedor.cpf_cnpj || "00000000000",
+              email: devedor.email || "",
+            },
+            valor: valorNum,
+            descricao: divida.descricao || "Pendência financeira",
+            dataVencimento: dataVencFormatted,
+          }),
+        }),
+      ]);
+
+      // Handle collection rule result
+      if (regraRes.status === "fulfilled" && regraRes.value.ok) {
+        const data = await regraRes.value.json();
         setRegraStatus(data.resumo ? { ...data.resumo, acoes: data.acoes } : null);
-        // Wait a moment to show success feedback before redirecting
-        await new Promise((r) => setTimeout(r, 2500));
       }
+
+      // Handle Asaas result
+      if (asaasRes.status === "fulfilled" && asaasRes.value.ok) {
+        const data = await asaasRes.value.json();
+        setAsaasData({ boleto: data.boleto, pix: data.pix });
+      }
+
+      // Stay on page to show payment links, auto-redirect after 6s
+      await new Promise((r) => setTimeout(r, 6000));
     } catch (err) {
-      console.error("Erro ao iniciar régua:", err);
+      console.error("Erro ao cadastrar dívida:", err);
     }
     router.push("/dividas");
   }
@@ -570,6 +614,66 @@ export default function NovaDividaPage() {
             <p className="text-xs text-emerald-600 mt-2">
               {regraStatus.enviados} enviados · {regraStatus.agendados} agendados · {regraStatus.erros} erros
             </p>
+          </div>
+        )}
+
+        {/* Asaas payment links */}
+        {asaasData && (
+          <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4 animate-fade-in">
+            <p className="font-semibold text-blue-900 text-sm mb-4 flex items-center gap-2">
+              <Check className="w-4 h-4 text-blue-600" />
+              Cobrança gerada no Asaas — links de pagamento prontos!
+            </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Pix */}
+              <div className="bg-white rounded-xl p-3 border border-blue-100">
+                <p className="text-xs font-semibold text-slate-700 mb-2">QR Code Pix</p>
+                {asaasData.pix.qrCodeBase64 && (
+                  <div className="flex justify-center mb-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`data:image/png;base64,${asaasData.pix.qrCodeBase64}`}
+                      alt="QR Code Pix"
+                      className="w-24 h-24 rounded-lg border border-slate-200"
+                    />
+                  </div>
+                )}
+                <button
+                  onClick={() => copyToClipboard(asaasData.pix.copiaCola, "pix")}
+                  className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-lg transition-all"
+                >
+                  {copiedPix ? "✓ Copiado!" : "Copiar Pix copia-e-cola"}
+                </button>
+              </div>
+
+              {/* Boleto */}
+              <div className="bg-white rounded-xl p-3 border border-blue-100">
+                <p className="text-xs font-semibold text-slate-700 mb-2">Boleto Bancário</p>
+                <p className="text-[9px] text-slate-400 font-mono break-all bg-slate-50 rounded px-1.5 py-1 mb-2 leading-relaxed">
+                  {asaasData.boleto.linhaDigitavel}
+                </p>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => copyToClipboard(asaasData.boleto.linhaDigitavel, "boleto")}
+                    className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-all"
+                  >
+                    {copiedBoleto ? "✓ Copiado!" : "Copiar código"}
+                  </button>
+                  {(asaasData.boleto.bankSlipUrl || asaasData.boleto.invoiceUrl) && (
+                    <a
+                      href={asaasData.boleto.bankSlipUrl || asaasData.boleto.invoiceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs font-semibold rounded-lg transition-all"
+                    >
+                      Abrir boleto
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-blue-600 mt-3 text-center">Redirecionando em alguns segundos...</p>
           </div>
         )}
 
