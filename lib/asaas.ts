@@ -20,8 +20,12 @@ async function asaasRequest<T>(
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Asaas API error ${res.status}: ${err}`);
+    const errJson = await res.json().catch(() => null);
+    if (errJson?.errors?.length) {
+      const msgs = errJson.errors.map((e: { code: string; description: string }) => e.description).join("; ");
+      throw new Error(`Asaas: ${msgs}`);
+    }
+    throw new Error(`Asaas API error ${res.status}`);
   }
   return res.json() as Promise<T>;
 }

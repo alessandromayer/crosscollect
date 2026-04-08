@@ -23,6 +23,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Asaas rejects past due dates — use tomorrow if date has already passed
+    const hoje = new Date();
+    const amanha = new Date(hoje);
+    amanha.setDate(amanha.getDate() + 1);
+    const dueDateRaw = new Date(dataVencimento + "T12:00:00");
+    const dueDate =
+      dueDateRaw <= hoje
+        ? amanha.toISOString().split("T")[0]
+        : dataVencimento;
+
     // 1. Create or find customer
     const customer = await createOrFindCustomer({
       name: devedor.nome,
@@ -36,14 +46,14 @@ export async function POST(req: NextRequest) {
         customer: customer.id,
         billingType: "BOLETO",
         value: valor,
-        dueDate: dataVencimento,
+        dueDate: dueDate,
         description: descricao || "Cobrança CrossCollect",
       }),
       createPayment({
         customer: customer.id,
         billingType: "PIX",
         value: valor,
-        dueDate: dataVencimento,
+        dueDate: dueDate,
         description: descricao || "Cobrança CrossCollect",
       }),
     ]);
