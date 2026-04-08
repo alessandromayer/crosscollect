@@ -1,7 +1,9 @@
 const ASAAS_BASE_URL = "https://www.asaas.com/api/v3";
 
 function asaasHeaders() {
-  const key = process.env.ASAAS_API_KEY;
+  // Strip surrounding quotes and leading backslash that can come from dotenv-expand
+  const raw = process.env.ASAAS_API_KEY ?? "";
+  const key = raw.replace(/^\\/, "").replace(/^['"]|['"]$/g, "").trim();
   if (!key) throw new Error("ASAAS_API_KEY não configurada");
   return {
     "Content-Type": "application/json",
