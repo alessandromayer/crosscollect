@@ -124,6 +124,7 @@ export default function DashboardPage() {
     total_em_aberto: 0, total_em_aberto_brl: 0,
     recuperado_mes: 0, recuperado_mes_brl: 0,
     taxa_sucesso: 0, casos_ativos: 0, casos_vencidos: 0, variacao_mensal: 0,
+    portfolio: { pendente: 0, em_negociacao: 0, vencido: 0, pago: 0, total: 0 },
   };
 
   // Live-rate conversions of the BRL open balance
@@ -239,12 +240,17 @@ export default function DashboardPage() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
           <h3 className="font-semibold text-slate-900 mb-5">{t("portfolio.title")}</h3>
           <div className="space-y-4">
-            {[
-              { label: t("portfolio.pending"), count: 18, pct: 42, color: "bg-yellow-400" },
-              { label: t("portfolio.negotiating"), count: 12, pct: 28, color: "bg-blue-500" },
-              { label: t("portfolio.overdue"), count: 8, pct: 19, color: "bg-red-500" },
-              { label: t("portfolio.paid"), count: 5, pct: 11, color: "bg-emerald-500" },
-            ].map((item) => (
+            {(() => {
+              const p = m.portfolio;
+              const total = p?.total ?? 0;
+              const pct = (n: number) => total > 0 ? Math.round((n / total) * 100) : 0;
+              return [
+                { label: t("portfolio.pending"),     count: p?.pendente     ?? 0, pct: pct(p?.pendente     ?? 0), color: "bg-yellow-400" },
+                { label: t("portfolio.negotiating"), count: p?.em_negociacao ?? 0, pct: pct(p?.em_negociacao ?? 0), color: "bg-blue-500"   },
+                { label: t("portfolio.overdue"),     count: p?.vencido       ?? 0, pct: pct(p?.vencido       ?? 0), color: "bg-red-500"    },
+                { label: t("portfolio.paid"),        count: p?.pago          ?? 0, pct: pct(p?.pago          ?? 0), color: "bg-emerald-500"},
+              ];
+            })().map((item) => (
               <div key={item.label}>
                 <div className="flex justify-between items-center mb-1.5">
                   <span className="text-sm text-slate-600">{item.label}</span>

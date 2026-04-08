@@ -76,6 +76,13 @@ export interface DashboardMetrics {
   casos_ativos: number;
   casos_vencidos: number;
   variacao_mensal: number;
+  portfolio?: {
+    pendente: number;
+    em_negociacao: number;
+    vencido: number;
+    pago: number;
+    total: number;
+  };
 }
 
 export interface PlanTier {

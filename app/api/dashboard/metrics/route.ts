@@ -25,7 +25,9 @@ export async function GET() {
     const total_em_aberto_brl = abertos.reduce((s: number, d) => s + Number(d.valor_brl || 0), 0);
     const recuperado_mes = pagosEsseMes.reduce((s: number, d) => s + Number(d.valor || 0), 0);
     const recuperado_mes_brl = pagosEsseMes.reduce((s: number, d) => s + Number(d.valor_brl || 0), 0);
-    const casos_ativos = all.filter((d) => d.status === "pendente" || d.status === "em_negociacao").length;
+    const n_pendente = all.filter((d) => d.status === "pendente").length;
+    const n_negociacao = all.filter((d) => d.status === "em_negociacao").length;
+    const casos_ativos = n_pendente + n_negociacao;
     const casos_vencidos = all.filter((d) => d.status === "vencido").length;
     const pagos_total = all.filter((d) => d.status === "pago").length;
     const taxa_sucesso = all.length > 0 ? Math.round((pagos_total / all.length) * 1000) / 10 : 0;
@@ -48,6 +50,13 @@ export async function GET() {
         casos_ativos,
         casos_vencidos,
         variacao_mensal: 0,
+        portfolio: {
+          pendente: n_pendente,
+          em_negociacao: n_negociacao,
+          vencido: casos_vencidos,
+          pago: pagos_total,
+          total: all.length,
+        },
       },
       recentDebts: recent || [],
       totalDebts: all.length,
