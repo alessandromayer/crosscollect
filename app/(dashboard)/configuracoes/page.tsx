@@ -20,15 +20,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { cn, maskApiKey } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 type Tab = "perfil" | "notificacoes" | "repasse" | "api";
-
-const tabs: { id: Tab; label: string; icon: React.ComponentType<{className?: string}> }[] = [
-  { id: "perfil", label: "Perfil", icon: User },
-  { id: "notificacoes", label: "Notificações", icon: Bell },
-  { id: "repasse", label: "Repasse Bancário", icon: Building2 },
-  { id: "api", label: "Chave de API", icon: Key },
-];
 
 function Toggle({
   checked,
@@ -57,12 +51,21 @@ function Toggle({
 }
 
 export default function ConfiguracoesPage() {
+  const t = useTranslations("settings");
+  const tc = useTranslations("common");
   const [activeTab, setActiveTab] = useState<Tab>("perfil");
   const [saved, setSaved] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKeyCopied, setApiKeyCopied] = useState(false);
 
   const mockApiKey = "cc_live_xK9mN3pQ8vR2wL5tY7aB4dF6jH1cE0sZ";
+
+  const tabs: { id: Tab; label: string; icon: React.ComponentType<{className?: string}> }[] = [
+    { id: "perfil", label: t("tabs.profile"), icon: User },
+    { id: "notificacoes", label: t("tabs.notifications"), icon: Bell },
+    { id: "repasse", label: t("tabs.transfer"), icon: Building2 },
+    { id: "api", label: t("tabs.api"), icon: Key },
+  ];
 
   // Perfil state
   const [perfil, setPerfil] = useState({
@@ -84,7 +87,7 @@ export default function ConfiguracoesPage() {
   });
 
   // Contas bancárias
-  const [contas, setContas] = useState([
+  const [contas] = useState([
     {
       id: "b1",
       banco: "Banco do Brasil",
@@ -109,12 +112,30 @@ export default function ConfiguracoesPage() {
     setTimeout(() => setApiKeyCopied(false), 2000);
   }
 
+  const emailNotifs = [
+    { key: "email_novo_pagamento", label: t("notifications.newPayment"), desc: t("notifications.newPaymentDesc") },
+    { key: "email_divida_vencida", label: t("notifications.debtOverdue"), desc: t("notifications.debtOverdueDesc") },
+    { key: "email_relatorio_semanal", label: t("notifications.weeklyReport"), desc: t("notifications.weeklyReportDesc") },
+  ];
+
+  const otherNotifs = [
+    { key: "whatsapp_alertas", label: t("notifications.whatsappAlerts"), desc: t("notifications.whatsappAlertsDesc") },
+    { key: "push_atividade", label: t("notifications.pushActivity"), desc: t("notifications.pushActivityDesc") },
+  ];
+
+  const scheduleItems = [
+    { label: t("transfer.frequency"), value: t("transfer.frequencyValue") },
+    { label: t("transfer.minimum"), value: t("transfer.minimumValue") },
+    { label: t("transfer.fee"), value: t("transfer.feeValue") },
+    { label: t("transfer.processing"), value: t("transfer.processingValue") },
+  ];
+
   return (
     <div className="p-8 max-w-5xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Configurações</h1>
-        <p className="text-slate-500 mt-0.5">Gerencie sua conta, notificações e integrações</p>
+        <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
+        <p className="text-slate-500 mt-0.5">{t("sub")}</p>
       </div>
 
       <div className="flex gap-8">
@@ -145,7 +166,7 @@ export default function ConfiguracoesPage() {
           {/* Perfil */}
           {activeTab === "perfil" && (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-              <h2 className="font-semibold text-slate-900 mb-6">Informações do Perfil</h2>
+              <h2 className="font-semibold text-slate-900 mb-6">{t("profile.title")}</h2>
 
               {/* Avatar */}
               <div className="flex items-center gap-5 mb-8 pb-8 border-b border-slate-100">
@@ -161,14 +182,14 @@ export default function ConfiguracoesPage() {
                   <p className="font-semibold text-slate-900">{perfil.nome}</p>
                   <p className="text-slate-400 text-sm">{perfil.email}</p>
                   <button className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-1">
-                    Alterar foto
+                    {t("profile.avatar")}
                   </button>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Nome completo</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("profile.name")}</label>
                   <input
                     value={perfil.nome}
                     onChange={(e) => setPerfil({ ...perfil, nome: e.target.value })}
@@ -177,7 +198,7 @@ export default function ConfiguracoesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">E-mail</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("profile.email")}</label>
                   <input
                     type="email"
                     value={perfil.email}
@@ -187,7 +208,7 @@ export default function ConfiguracoesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Empresa</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("profile.company")}</label>
                   <input
                     value={perfil.empresa}
                     onChange={(e) => setPerfil({ ...perfil, empresa: e.target.value })}
@@ -196,7 +217,7 @@ export default function ConfiguracoesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Cargo</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("profile.role")}</label>
                   <input
                     value={perfil.cargo}
                     onChange={(e) => setPerfil({ ...perfil, cargo: e.target.value })}
@@ -205,7 +226,7 @@ export default function ConfiguracoesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">País</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("profile.country")}</label>
                   <div className="relative">
                     <Globe2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
@@ -217,7 +238,7 @@ export default function ConfiguracoesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Telefone</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("profile.phone")}</label>
                   <input
                     value={perfil.telefone}
                     onChange={(e) => setPerfil({ ...perfil, telefone: e.target.value })}
@@ -228,10 +249,10 @@ export default function ConfiguracoesPage() {
 
               {/* Password */}
               <div className="mt-6 pt-6 border-t border-slate-100">
-                <h3 className="font-medium text-slate-900 mb-4">Segurança</h3>
+                <h3 className="font-medium text-slate-900 mb-4">{t("profile.security")}</h3>
                 <button className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium rounded-xl transition-all">
                   <Shield className="w-4 h-4" />
-                  Alterar senha
+                  {t("profile.changePassword")}
                 </button>
               </div>
 
@@ -241,7 +262,7 @@ export default function ConfiguracoesPage() {
                   className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all"
                 >
                   {saved ? <Check className="w-4 h-4" /> : null}
-                  {saved ? "Salvo!" : "Salvar alterações"}
+                  {saved ? tc("saved") : tc("save")}
                 </button>
               </div>
             </div>
@@ -250,17 +271,13 @@ export default function ConfiguracoesPage() {
           {/* Notificações */}
           {activeTab === "notificacoes" && (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-              <h2 className="font-semibold text-slate-900 mb-6">Preferências de Notificação</h2>
+              <h2 className="font-semibold text-slate-900 mb-6">{t("notifications.title")}</h2>
 
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">E-mail</h3>
+                  <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">{t("notifications.emailSection")}</h3>
                   <div className="space-y-4">
-                    {[
-                      { key: "email_novo_pagamento", label: "Novo pagamento recebido", desc: "Notificação imediata quando um pagamento é confirmado" },
-                      { key: "email_divida_vencida", label: "Dívida vencida", desc: "Alerta quando uma dívida passa do prazo sem pagamento" },
-                      { key: "email_relatorio_semanal", label: "Relatório semanal", desc: "Resumo da carteira enviado toda segunda-feira" },
-                    ].map((n) => (
+                    {emailNotifs.map((n) => (
                       <div key={n.key} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
                         <div>
                           <p className="text-sm font-medium text-slate-800">{n.label}</p>
@@ -276,12 +293,9 @@ export default function ConfiguracoesPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">WhatsApp & Push</h3>
+                  <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">{t("notifications.otherSection")}</h3>
                   <div className="space-y-4">
-                    {[
-                      { key: "whatsapp_alertas", label: "Alertas via WhatsApp", desc: "Receba alertas críticos no WhatsApp" },
-                      { key: "push_atividade", label: "Notificações push", desc: "Notificações no navegador sobre atividades" },
-                    ].map((n) => (
+                    {otherNotifs.map((n) => (
                       <div key={n.key} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
                         <div>
                           <p className="text-sm font-medium text-slate-800">{n.label}</p>
@@ -303,7 +317,7 @@ export default function ConfiguracoesPage() {
                   className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all"
                 >
                   {saved ? <Check className="w-4 h-4" /> : null}
-                  {saved ? "Salvo!" : "Salvar preferências"}
+                  {saved ? tc("saved") : tc("save")}
                 </button>
               </div>
             </div>
@@ -315,14 +329,14 @@ export default function ConfiguracoesPage() {
               <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="font-semibold text-slate-900">Contas para Repasse</h2>
+                    <h2 className="font-semibold text-slate-900">{t("transfer.title")}</h2>
                     <p className="text-slate-400 text-sm mt-0.5">
-                      Defina onde os valores recuperados serão creditados
+                      {t("transfer.sub")}
                     </p>
                   </div>
                   <button className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-50 text-sm font-medium rounded-xl transition-all">
                     <Plus className="w-4 h-4" />
-                    Adicionar conta
+                    {t("transfer.addAccount")}
                   </button>
                 </div>
 
@@ -345,7 +359,7 @@ export default function ConfiguracoesPage() {
                               <p className="font-semibold text-slate-900">{conta.banco}</p>
                               {conta.ativo && (
                                 <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-                                  Principal
+                                  {t("transfer.main")}
                                 </span>
                               )}
                             </div>
@@ -390,14 +404,13 @@ export default function ConfiguracoesPage() {
                   <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="font-semibold text-amber-900 text-sm mb-1">
-                      Transferência Internacional
+                      {t("transfer.international")}
                     </p>
                     <p className="text-amber-700 text-sm leading-relaxed">
-                      Para receber em contas no exterior via SWIFT/SEPA, entre em contato com o suporte.
-                      Trabalhamos com Wise, Payoneer e transferências bancárias internacionais diretas.
+                      {t("transfer.internationalText")}
                     </p>
                     <button className="mt-2 text-amber-700 hover:text-amber-900 font-medium text-sm underline">
-                      Configurar conta internacional
+                      {t("transfer.setupInternational")}
                     </button>
                   </div>
                 </div>
@@ -405,14 +418,9 @@ export default function ConfiguracoesPage() {
 
               {/* Repasse schedule */}
               <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-                <h3 className="font-semibold text-slate-900 mb-4">Cronograma de Repasse</h3>
+                <h3 className="font-semibold text-slate-900 mb-4">{t("transfer.schedule")}</h3>
                 <div className="space-y-3">
-                  {[
-                    { label: "Frequência de repasse", value: "Semanal (toda sexta-feira)" },
-                    { label: "Valor mínimo para repasse", value: "R$ 500,00" },
-                    { label: "Taxa de repasse", value: "1,5% do valor transferido" },
-                    { label: "Prazo de processamento", value: "1-3 dias úteis" },
-                  ].map(({ label, value }) => (
+                  {scheduleItems.map(({ label, value }) => (
                     <div key={label} className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
                       <span className="text-sm text-slate-500">{label}</span>
                       <span className="text-sm font-medium text-slate-900">{value}</span>
@@ -432,15 +440,15 @@ export default function ConfiguracoesPage() {
                     <Key className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="font-semibold text-slate-900">Chave de API</h2>
+                    <h2 className="font-semibold text-slate-900">{t("api.title")}</h2>
                     <p className="text-slate-400 text-sm mt-0.5">
-                      Use esta chave para integrar o CrossCollect ao seu sistema via REST API
+                      {t("api.sub")}
                     </p>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Sua chave de API</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">{t("api.yourKey")}</label>
                   <div className="flex gap-2">
                     <div className="flex-1 relative">
                       <input
@@ -453,7 +461,7 @@ export default function ConfiguracoesPage() {
                     <button
                       onClick={() => setShowApiKey(!showApiKey)}
                       className="p-2.5 border border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-all"
-                      title={showApiKey ? "Ocultar" : "Mostrar"}
+                      title={showApiKey ? t("api.hide") : t("api.show")}
                     >
                       {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -465,30 +473,30 @@ export default function ConfiguracoesPage() {
                           ? "border-emerald-300 bg-emerald-50 text-emerald-600"
                           : "border-slate-200 text-slate-400 hover:text-slate-600 hover:bg-slate-50"
                       )}
-                      title="Copiar"
+                      title={t("api.copy")}
                     >
                       {apiKeyCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     </button>
                   </div>
                   <p className="text-xs text-slate-400 mt-2">
-                    Criada em 15/01/2024 · Nunca expira · Último uso: há 2 dias
+                    {t("api.created")} 15/01/2024 · {t("api.neverExpires")} · {t("api.lastUsed")}: há 2 dias
                   </p>
                 </div>
 
                 <div className="mt-6 flex items-center gap-3">
                   <button className="flex items-center gap-2 px-4 py-2.5 border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium rounded-xl transition-all">
                     <RefreshCw className="w-4 h-4" />
-                    Regenerar chave
+                    {t("api.regenerate")}
                   </button>
                   <p className="text-xs text-slate-400">
-                    Atenção: regenerar invalida a chave atual imediatamente.
+                    {t("api.regenerateWarning")}
                   </p>
                 </div>
               </div>
 
               {/* API Docs */}
               <div className="bg-slate-900 rounded-2xl p-6">
-                <h3 className="font-semibold text-white mb-4">Exemplo de uso</h3>
+                <h3 className="font-semibold text-white mb-4">{t("api.example")}</h3>
                 <pre className="text-sm text-slate-300 font-mono overflow-x-auto">
 {`curl -X GET \\
   https://api.crosscollect.com/v1/dividas \\
@@ -499,7 +507,7 @@ export default function ConfiguracoesPage() {
 
               {/* Endpoints */}
               <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-                <h3 className="font-semibold text-slate-900 mb-4">Endpoints disponíveis</h3>
+                <h3 className="font-semibold text-slate-900 mb-4">{t("api.endpoints")}</h3>
                 <div className="space-y-2">
                   {[
                     { method: "GET", path: "/v1/dividas", desc: "Listar todas as dívidas" },
@@ -530,7 +538,7 @@ export default function ConfiguracoesPage() {
                     href="#"
                     className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
                   >
-                    Ver documentação completa da API
+                    {t("api.docsLink")}
                     <CreditCard className="w-3.5 h-3.5" />
                   </a>
                 </div>

@@ -19,13 +19,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
-const steps = [
-  { id: 1, label: "Devedor", icon: User },
-  { id: 2, label: "Dívida", icon: DollarSign },
-  { id: 3, label: "Documentos", icon: FileUp },
-  { id: 4, label: "Régua de Cobrança", icon: Bell },
-];
+const stepIcons = [User, DollarSign, FileUp, Bell];
 
 const currencies = ["USD", "EUR", "GBP", "CAD", "AUD", "BRL"];
 
@@ -50,6 +46,16 @@ const canalColors: Record<string, string> = {
 
 export default function NovaDividaPage() {
   const router = useRouter();
+  const t = useTranslations("debtForm");
+  const tc = useTranslations("common");
+
+  const steps = [
+    { id: 1, label: t("step1"), icon: stepIcons[0] },
+    { id: 2, label: t("step2"), icon: stepIcons[1] },
+    { id: 3, label: t("step3"), icon: stepIcons[2] },
+    { id: 4, label: t("step4"), icon: stepIcons[3] },
+  ];
+
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -230,8 +236,8 @@ export default function NovaDividaPage() {
           <ChevronLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Nova Dívida</h1>
-          <p className="text-slate-500 text-sm mt-0.5">Cadastre uma nova cobrança em 4 passos</p>
+          <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
+          <p className="text-slate-500 text-sm mt-0.5">{t("subtitle")}</p>
         </div>
       </div>
 
@@ -289,16 +295,16 @@ export default function NovaDividaPage() {
         {step === 1 && (
           <div className="space-y-6 animate-fade-in">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 mb-1">Dados do Devedor</h2>
-              <p className="text-slate-500 text-sm">Informe os dados de contato do devedor no Brasil</p>
+              <h2 className="text-lg font-bold text-slate-900 mb-1">{t("steps.debtor.title")}</h2>
+              <p className="text-slate-500 text-sm">{t("steps.debtor.sub")}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Tipo de pessoa</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">{t("steps.debtor.type")}</label>
               <div className="flex gap-3">
                 {[
-                  { value: "pessoa_juridica", label: "Pessoa Jurídica (CNPJ)" },
-                  { value: "pessoa_fisica", label: "Pessoa Física (CPF)" },
+                  { value: "pessoa_juridica", label: t("steps.debtor.company") },
+                  { value: "pessoa_fisica", label: t("steps.debtor.individual") },
                 ].map((opt) => (
                   <button
                     key={opt.value}
@@ -320,19 +326,19 @@ export default function NovaDividaPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  {devedor.tipo === "pessoa_juridica" ? "Razão Social" : "Nome Completo"}
+                  {devedor.tipo === "pessoa_juridica" ? t("steps.debtor.name") : t("steps.debtor.namePF")}
                 </label>
                 <input
                   value={devedor.nome}
                   onChange={(e) => setDevedor({ ...devedor, nome: e.target.value })}
-                  placeholder={devedor.tipo === "pessoa_juridica" ? "Nome da empresa" : "Nome do devedor"}
+                  placeholder={devedor.tipo === "pessoa_juridica" ? t("steps.debtor.namePlaceholder") : t("steps.debtor.namePFPlaceholder")}
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  {devedor.tipo === "pessoa_juridica" ? "CNPJ" : "CPF"}
+                  {devedor.tipo === "pessoa_juridica" ? t("steps.debtor.taxId") : t("steps.debtor.taxIdPF")}
                 </label>
                 <input
                   value={devedor.cpf_cnpj}
@@ -343,7 +349,7 @@ export default function NovaDividaPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Telefone / WhatsApp</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("steps.debtor.phone")}</label>
                 <input
                   value={devedor.telefone}
                   onChange={(e) => setDevedor({ ...devedor, telefone: e.target.value })}
@@ -353,18 +359,18 @@ export default function NovaDividaPage() {
               </div>
 
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">E-mail</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("steps.debtor.email")}</label>
                 <input
                   type="email"
                   value={devedor.email}
                   onChange={(e) => setDevedor({ ...devedor, email: e.target.value })}
-                  placeholder="email@devedor.com.br"
+                  placeholder={t("steps.debtor.emailPlaceholder")}
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Cidade</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("steps.debtor.city")}</label>
                 <input
                   value={devedor.cidade}
                   onChange={(e) => setDevedor({ ...devedor, cidade: e.target.value })}
@@ -374,13 +380,13 @@ export default function NovaDividaPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Estado</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("steps.debtor.state")}</label>
                 <select
                   value={devedor.estado}
                   onChange={(e) => setDevedor({ ...devedor, estado: e.target.value })}
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                 >
-                  <option value="">Selecione...</option>
+                  <option value="">{t("steps.debtor.statePlaceholder")}</option>
                   {estados.map((uf) => (
                     <option key={uf} value={uf}>{uf}</option>
                   ))}
@@ -394,23 +400,23 @@ export default function NovaDividaPage() {
         {step === 2 && (
           <div className="space-y-6 animate-fade-in">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 mb-1">Dados da Dívida</h2>
-              <p className="text-slate-500 text-sm">Informe o valor, moeda e data de vencimento</p>
+              <h2 className="text-lg font-bold text-slate-900 mb-1">{t("steps.debt.title")}</h2>
+              <p className="text-slate-500 text-sm">{t("steps.debt.sub")}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Descrição da dívida</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("steps.debt.description")}</label>
               <input
                 value={divida.descricao}
                 onChange={(e) => setDivida({ ...divida, descricao: e.target.value })}
-                placeholder="Ex: Fornecimento de equipamentos – Contrato #001"
+                placeholder={t("steps.debt.descriptionPlaceholder")}
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Moeda</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("steps.debt.currency")}</label>
                 <select
                   value={divida.moeda}
                   onChange={(e) => setDivida({ ...divida, moeda: e.target.value })}
@@ -424,7 +430,7 @@ export default function NovaDividaPage() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Valor ({divida.moeda})
+                  {t("steps.debt.amount")} ({divida.moeda})
                 </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">
@@ -443,7 +449,7 @@ export default function NovaDividaPage() {
               </div>
 
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Data de Vencimento</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("steps.debt.dueDate")}</label>
                 <input
                   type="date"
                   value={divida.dataVencimento}
@@ -455,23 +461,23 @@ export default function NovaDividaPage() {
 
             {divida.valor && (
               <div className="bg-blue-50 rounded-xl p-4">
-                <p className="text-sm text-blue-700 font-medium mb-1">Estimativa de conversão</p>
+                <p className="text-sm text-blue-700 font-medium mb-1">{t("steps.debt.estimate")}</p>
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-bold text-blue-900">
                     R$ {(parseFloat(divida.valor || "0") * 5.0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                   </span>
                   <span className="text-blue-500 text-sm">taxa: 5,00 BRL/{divida.moeda}</span>
                 </div>
-                <p className="text-xs text-blue-500 mt-1">*Taxa de câmbio aproximada. Valor real aplicado no momento do pagamento.</p>
+                <p className="text-xs text-blue-500 mt-1">{t("steps.debt.estimateSub")}</p>
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Observações (opcional)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">{t("steps.debt.notes")} ({tc("optional")})</label>
               <textarea
                 value={divida.observacoes}
                 onChange={(e) => setDivida({ ...divida, observacoes: e.target.value })}
-                placeholder="Contexto adicional sobre a dívida, histórico de relação comercial, etc."
+                placeholder={t("steps.debt.notesPlaceholder")}
                 rows={3}
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               />
@@ -483,14 +489,14 @@ export default function NovaDividaPage() {
         {step === 3 && (
           <div className="space-y-6 animate-fade-in">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 mb-1">Documentos</h2>
-              <p className="text-slate-500 text-sm">Anexe contratos, notas fiscais ou qualquer documento comprobatório</p>
+              <h2 className="text-lg font-bold text-slate-900 mb-1">{t("steps.documents.title")}</h2>
+              <p className="text-slate-500 text-sm">{t("steps.documents.sub")}</p>
             </div>
 
             <div className="border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer">
               <Upload className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-600 font-medium mb-1">Arraste arquivos aqui ou clique para selecionar</p>
-              <p className="text-slate-400 text-sm">PDF, JPG, PNG, DOCX — até 25MB por arquivo</p>
+              <p className="text-slate-600 font-medium mb-1">{t("steps.documents.dragDrop")}</p>
+              <p className="text-slate-400 text-sm">{t("steps.documents.formats")}</p>
               <button
                 type="button"
                 onClick={() =>
@@ -498,13 +504,13 @@ export default function NovaDividaPage() {
                 }
                 className="mt-4 px-5 py-2 bg-slate-900 text-white text-sm font-medium rounded-xl hover:bg-slate-800 transition-all"
               >
-                Selecionar arquivos
+                {t("steps.documents.select")}
               </button>
             </div>
 
             {documentos.length > 0 && (
               <div className="space-y-2">
-                <p className="text-sm font-medium text-slate-700">Arquivos selecionados:</p>
+                <p className="text-sm font-medium text-slate-700">{t("steps.documents.selected")}</p>
                 {documentos.map((doc, idx) => (
                   <div
                     key={idx}
@@ -526,12 +532,12 @@ export default function NovaDividaPage() {
             )}
 
             <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
-              <p className="text-sm font-semibold text-amber-800 mb-1">Documentos recomendados</p>
+              <p className="text-sm font-semibold text-amber-800 mb-1">{t("steps.documents.recommended")}</p>
               <ul className="text-sm text-amber-700 space-y-1">
-                <li>• Contrato assinado ou proposta aceita</li>
-                <li>• Nota fiscal ou invoice</li>
-                <li>• E-mails comprobatórios da relação comercial</li>
-                <li>• Protesto em cartório (se aplicável)</li>
+                <li>• {t("steps.documents.rec1")}</li>
+                <li>• {t("steps.documents.rec2")}</li>
+                <li>• {t("steps.documents.rec3")}</li>
+                <li>• {t("steps.documents.rec4")}</li>
               </ul>
             </div>
           </div>
@@ -541,9 +547,9 @@ export default function NovaDividaPage() {
         {step === 4 && (
           <div className="space-y-6 animate-fade-in">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 mb-1">Régua de Cobrança</h2>
+              <h2 className="text-lg font-bold text-slate-900 mb-1">{t("steps.rule.title")}</h2>
               <p className="text-slate-500 text-sm">
-                Configure a sequência automática de contatos após o vencimento
+                {t("steps.rule.sub")}
               </p>
             </div>
 
@@ -581,7 +587,7 @@ export default function NovaDividaPage() {
                         onClick={() => toggleStep(cs.id)}
                       >
                         <div className="text-xs font-bold text-slate-500 mb-1">
-                          Dia +{cs.dia}
+                          {t("steps.rule.day", { day: cs.dia })}
                         </div>
                         <span
                           className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium mb-2 ${canalColors[cs.canal] || "bg-slate-100 text-slate-600"}`}
@@ -598,19 +604,18 @@ export default function NovaDividaPage() {
 
             <div className="flex items-center justify-between py-2">
               <p className="text-sm text-slate-500">
-                {cobrancaSteps.filter((s) => s.ativo).length} de {cobrancaSteps.length} etapas ativas
+                {t("steps.rule.active", { active: cobrancaSteps.filter((s) => s.ativo).length, total: cobrancaSteps.length })}
               </p>
               <button className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium">
                 <Plus className="w-3.5 h-3.5" />
-                Adicionar etapa
+                {t("steps.rule.addStep")}
               </button>
             </div>
 
             <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
-              <p className="text-sm font-semibold text-emerald-800 mb-1">Régua inteligente ativada</p>
+              <p className="text-sm font-semibold text-emerald-800 mb-1">{t("steps.rule.aiNote")}</p>
               <p className="text-sm text-emerald-700">
-                O assistente IA irá personalizar as mensagens com base no perfil do devedor e histórico de interações,
-                aumentando a taxa de recuperação em até 40%.
+                {t("steps.rule.aiNoteDesc")}
               </p>
             </div>
           </div>
@@ -621,7 +626,7 @@ export default function NovaDividaPage() {
           <div className="mt-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4 animate-fade-in">
             <p className="font-semibold text-emerald-800 text-sm mb-3 flex items-center gap-2">
               <Check className="w-4 h-4" />
-              Régua de cobrança iniciada com sucesso!
+              {t("ruleStarted")}
             </p>
             <div className="space-y-2">
               {regraStatus.acoes?.map((acao, i) => (
@@ -632,11 +637,11 @@ export default function NovaDividaPage() {
                     <MessageCircle className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
                   )}
                   <span className={`font-medium ${acao.status === "enviado" ? "text-emerald-700" : acao.status === "agendado" ? "text-blue-600" : "text-red-600"}`}>
-                    {acao.status === "enviado" ? "✓ Enviado" : acao.status === "agendado" ? "⏰ Agendado" : "✗ Erro"}
+                    {acao.status === "enviado" ? t("sent") : acao.status === "agendado" ? t("scheduled") : t("error")}
                   </span>
                   <span className="text-slate-500">
                     {acao.tipo === "email" ? "E-mail" : "WhatsApp"} — {acao.subtipo.replace("_", " ")}
-                    {acao.diasAposVencimento > 0 ? ` (dia +${acao.diasAposVencimento})` : " (agora)"}
+                    {acao.diasAposVencimento > 0 ? ` ${t("dayPlus", { day: acao.diasAposVencimento })}` : ` ${t("now")}`}
                   </span>
                 </div>
               ))}
@@ -715,7 +720,7 @@ export default function NovaDividaPage() {
             className="flex items-center gap-2 px-5 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-4 h-4" />
-            Anterior
+            {tc("previous")}
           </button>
 
           <div className="flex items-center gap-1.5">
@@ -735,7 +740,7 @@ export default function NovaDividaPage() {
               onClick={nextStep}
               className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-600/25"
             >
-              Próximo
+              {tc("next")}
               <ChevronRight className="w-4 h-4" />
             </button>
           ) : (
@@ -750,17 +755,17 @@ export default function NovaDividaPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
-                  Cadastrando e disparando régua...
+                  {t("submitting")}
                 </>
               ) : regraStatus ? (
                 <>
                   <Check className="w-4 h-4" />
-                  Régua iniciada! Redirecionando...
+                  {t("submitted")}
                 </>
               ) : (
                 <>
                   <Check className="w-4 h-4" />
-                  Cadastrar Dívida
+                  {t("submit")}
                 </>
               )}
             </button>

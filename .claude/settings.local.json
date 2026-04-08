@@ -13,7 +13,13 @@
       "Bash(gh auth:*)",
       "Bash(brew install:*)",
       "Bash(vercel:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(curl -s -X POST http://localhost:3000/api/asaas/criar-cobranca -H 'Content-Type: application/json' -d '{\"devedor\":{\"nome\":\"Teste Silva\",\"cpf_cnpj\":\"12345678901\",\"email\":\"teste@teste.com\"},\"valor\":1000,\"descricao\":\"Teste CrossCollect\",\"dataVencimento\":\"2026-04-15\"}')",
+      "Bash(curl -s http://localhost:3000/api/asaas/criar-cobranca -X POST -H 'Content-Type: application/json' -d '{}')",
+      "Bash(curl:*)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(node:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

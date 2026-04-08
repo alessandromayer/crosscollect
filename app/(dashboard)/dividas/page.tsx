@@ -15,6 +15,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { formatCurrency, formatDate, getStatusLabel } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { Debt } from "@/types";
 
 const statusBadgeClass: Record<string, string> = {
@@ -33,19 +34,21 @@ const statusDot: Record<string, string> = {
   cancelado: "bg-slate-400",
 };
 
-const statusFilters = [
-  { label: "Todas", value: "all" },
-  { label: "Pendentes", value: "pendente" },
-  { label: "Em Negociação", value: "em_negociacao" },
-  { label: "Vencidas", value: "vencido" },
-  { label: "Pagas", value: "pago" },
-];
-
 export default function DividasPage() {
+  const t = useTranslations("debts");
+  const tc = useTranslations("common");
   const [debts, setDebts] = useState<Debt[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  const statusFilters = [
+    { label: t("filters.all"), value: "all" },
+    { label: t("filters.pending"), value: "pendente" },
+    { label: t("filters.negotiating"), value: "em_negociacao" },
+    { label: t("filters.overdue"), value: "vencido" },
+    { label: t("filters.paid"), value: "pago" },
+  ];
 
   useEffect(() => {
     fetch("/api/dividas")
@@ -74,22 +77,24 @@ export default function DividasPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Dívidas</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
           <p className="text-slate-500 mt-0.5">
-            {loading ? "Carregando..." : `${filtered.length} registros · ${formatCurrency(totalAberto)} em aberto`}
+            {loading
+              ? tc("loading")
+              : t("subtitle", { count: filtered.length, value: formatCurrency(totalAberto) })}
           </p>
         </div>
         <div className="flex items-center gap-3">
           <button className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium rounded-xl transition-all text-sm">
             <Download className="w-4 h-4" />
-            Exportar
+            {t("export")}
           </button>
           <Link
             href="/dividas/nova"
             className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-600/25"
           >
             <Plus className="w-4 h-4" />
-            Nova Dívida
+            {t("newDebt")}
           </Link>
         </div>
       </div>
@@ -101,7 +106,7 @@ export default function DividasPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Buscar por devedor, descrição ou CPF/CNPJ..."
+              placeholder={t("searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -110,12 +115,12 @@ export default function DividasPage() {
           <div className="flex items-center gap-2 ml-auto">
             <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-all">
               <Filter className="w-3.5 h-3.5" />
-              Filtros
+              {tc("filter")}
               <ChevronDown className="w-3.5 h-3.5" />
             </button>
             <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-50 transition-all">
               <ArrowUpDown className="w-3.5 h-3.5" />
-              Ordenar
+              {t("sort")}
             </button>
           </div>
         </div>
@@ -148,18 +153,18 @@ export default function DividasPage() {
         {loading ? (
           <div className="flex items-center justify-center gap-2 py-20 text-slate-400">
             <Loader2 className="w-5 h-5 animate-spin" />
-            Carregando dívidas...
+            {tc("loading")}
           </div>
         ) : (
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/50">
-                <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Devedor</th>
-                <th className="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Descrição</th>
-                <th className="text-right px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Valor</th>
-                <th className="text-center px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Moeda</th>
-                <th className="text-center px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Vencimento</th>
-                <th className="text-center px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+                <th className="text-left px-6 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">{t("table.debtor")}</th>
+                <th className="text-left px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">{t("table.description")}</th>
+                <th className="text-right px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">{t("table.value")}</th>
+                <th className="text-center px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">{t("table.currency")}</th>
+                <th className="text-center px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">{t("table.dueDate")}</th>
+                <th className="text-center px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">{t("table.status")}</th>
                 <th className="px-4 py-3.5"></th>
               </tr>
             </thead>
@@ -168,14 +173,14 @@ export default function DividasPage() {
                 <tr>
                   <td colSpan={7} className="text-center py-16">
                     <FileText className="w-10 h-10 text-slate-200 mx-auto mb-3" />
-                    <p className="text-slate-400 font-medium">Nenhuma dívida encontrada</p>
+                    <p className="text-slate-400 font-medium">{t("empty")}</p>
                     <p className="text-slate-300 text-sm mt-1">
-                      {debts.length === 0 ? "Cadastre sua primeira dívida" : "Tente ajustar os filtros"}
+                      {debts.length === 0 ? t("emptyHint") : t("emptyHint")}
                     </p>
                     {debts.length === 0 && (
                       <Link href="/dividas/nova" className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl">
                         <Plus className="w-4 h-4" />
-                        Nova Dívida
+                        {t("newDebt")}
                       </Link>
                     )}
                   </td>
@@ -220,7 +225,7 @@ export default function DividasPage() {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Link href={`/dividas/${debt.id}`} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Ver detalhes">
+                        <Link href={`/dividas/${debt.id}`} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title={tc("seeDetails")}>
                           <Eye className="w-4 h-4" />
                         </Link>
                         <button className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all">
@@ -237,13 +242,12 @@ export default function DividasPage() {
 
         <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between">
           <p className="text-sm text-slate-500">
-            Mostrando <span className="font-medium">{filtered.length}</span> de{" "}
-            <span className="font-medium">{debts.length}</span> registros
+            {t("pagination.showing", { count: filtered.length, total: debts.length })}
           </p>
           <div className="flex items-center gap-1">
-            <button className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 disabled:opacity-40 transition-all">Anterior</button>
+            <button className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 disabled:opacity-40 transition-all">{t("pagination.previous")}</button>
             <button className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg font-medium">1</button>
-            <button className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-all">Próxima</button>
+            <button className="px-3 py-1.5 text-sm border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-all">{t("pagination.next")}</button>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import {
   Globe2,
   LayoutDashboard,
@@ -21,10 +22,18 @@ import { LanguageToggle } from "@/components/language-toggle";
 export function Sidebar() {
   const pathname = usePathname();
   const t = useTranslations("nav");
+  const [debtCount, setDebtCount] = useState<number>(0);
+
+  useEffect(() => {
+    fetch("/api/dividas")
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setDebtCount(data.length); })
+      .catch(() => {});
+  }, []);
 
   const navItems = [
     { label: t("dashboard"), href: "/dashboard", icon: LayoutDashboard },
-    { label: t("debts"), href: "/dividas", icon: FileText, badge: "43" },
+    { label: t("debts"), href: "/dividas", icon: FileText, badge: debtCount > 0 ? debtCount.toString() : undefined },
     { label: t("assistant"), href: "/assistente", icon: BotMessageSquare, highlight: true },
     { label: t("plans"), href: "/planos", icon: CreditCard },
     { label: t("settings"), href: "/configuracoes", icon: Settings },

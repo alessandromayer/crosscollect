@@ -12,104 +12,101 @@ import {
   Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 type Period = "mensal" | "anual";
 
-const plans = [
+type PlanFeatureKey =
+  | "debts5" | "debts50" | "debtsUnlimited"
+  | "ai50" | "ai1000" | "aiUnlimited"
+  | "rule" | "ruleAdv" | "rulePro"
+  | "dashboard" | "dashboardFull" | "dashboardAdv"
+  | "user1" | "user3" | "user10" | "usersUnlimited"
+  | "pdf" | "pdfExcel"
+  | "transfer" | "api"
+  | "support" | "supportPriority" | "support247"
+  | "sla" | "onboarding" | "integrations"
+  | "manager" | "training" | "contract" | "everything";
+
+const plansData = [
   {
     id: "starter",
     nome: "Starter",
-    descricao: "Para credores individuais começando",
     icon: Globe2,
     preco: { mensal: 0, anual: 0 },
-    moeda: "USD",
     cor: "slate",
     recursos: [
-      { label: "Até 5 dívidas ativas", ok: true },
-      { label: "Assistente IA (50 msg/mês)", ok: true },
-      { label: "Régua de cobrança básica", ok: true },
-      { label: "Dashboard de métricas", ok: true },
-      { label: "1 usuário", ok: true },
-      { label: "Relatórios avançados", ok: false },
-      { label: "Repasse bancário automático", ok: false },
-      { label: "API de integração", ok: false },
-      { label: "Suporte prioritário", ok: false },
+      { key: "debts5" as PlanFeatureKey, ok: true },
+      { key: "ai50" as PlanFeatureKey, ok: true },
+      { key: "rule" as PlanFeatureKey, ok: true },
+      { key: "dashboard" as PlanFeatureKey, ok: true },
+      { key: "user1" as PlanFeatureKey, ok: true },
+      { key: "dashboardAdv" as PlanFeatureKey, ok: false },
+      { key: "transfer" as PlanFeatureKey, ok: false },
+      { key: "api" as PlanFeatureKey, ok: false },
+      { key: "supportPriority" as PlanFeatureKey, ok: false },
     ],
-    limite_dividas: 5,
-    limite_usuarios: 1,
-    cta: "Começar grátis",
+    ctaKey: "starter" as const,
     destaque: false,
   },
   {
     id: "growth",
     nome: "Growth",
-    descricao: "Para equipes em crescimento",
     icon: Zap,
     preco: { mensal: 49, anual: 39 },
-    moeda: "USD",
     cor: "blue",
     recursos: [
-      { label: "Até 50 dívidas ativas", ok: true },
-      { label: "Assistente IA (1.000 msg/mês)", ok: true },
-      { label: "Régua de cobrança avançada", ok: true },
-      { label: "Dashboard completo + relatórios", ok: true },
-      { label: "Até 3 usuários", ok: true },
-      { label: "Relatórios PDF exportáveis", ok: true },
-      { label: "Repasse bancário automático", ok: false },
-      { label: "API de integração", ok: false },
-      { label: "Suporte por e-mail", ok: true },
+      { key: "debts50" as PlanFeatureKey, ok: true },
+      { key: "ai1000" as PlanFeatureKey, ok: true },
+      { key: "ruleAdv" as PlanFeatureKey, ok: true },
+      { key: "dashboardFull" as PlanFeatureKey, ok: true },
+      { key: "user3" as PlanFeatureKey, ok: true },
+      { key: "pdf" as PlanFeatureKey, ok: true },
+      { key: "transfer" as PlanFeatureKey, ok: false },
+      { key: "api" as PlanFeatureKey, ok: false },
+      { key: "support" as PlanFeatureKey, ok: true },
     ],
-    limite_dividas: 50,
-    limite_usuarios: 3,
-    cta: "Assinar Growth",
+    ctaKey: "growth" as const,
     destaque: true,
   },
   {
     id: "professional",
     nome: "Professional",
-    descricao: "Para empresas com alto volume",
     icon: Building2,
     preco: { mensal: 149, anual: 119 },
-    moeda: "USD",
     cor: "violet",
     recursos: [
-      { label: "Dívidas ilimitadas", ok: true },
-      { label: "Assistente IA ilimitado", ok: true },
-      { label: "Régua de cobrança personalizada", ok: true },
-      { label: "Dashboard + relatórios avançados", ok: true },
-      { label: "Até 10 usuários", ok: true },
-      { label: "Relatórios PDF e Excel", ok: true },
-      { label: "Repasse bancário automático", ok: true },
-      { label: "API REST completa", ok: true },
-      { label: "Suporte prioritário (chat)", ok: true },
+      { key: "debtsUnlimited" as PlanFeatureKey, ok: true },
+      { key: "aiUnlimited" as PlanFeatureKey, ok: true },
+      { key: "rulePro" as PlanFeatureKey, ok: true },
+      { key: "dashboardAdv" as PlanFeatureKey, ok: true },
+      { key: "user10" as PlanFeatureKey, ok: true },
+      { key: "pdfExcel" as PlanFeatureKey, ok: true },
+      { key: "transfer" as PlanFeatureKey, ok: true },
+      { key: "api" as PlanFeatureKey, ok: true },
+      { key: "supportPriority" as PlanFeatureKey, ok: true },
     ],
-    limite_dividas: -1,
-    limite_usuarios: 10,
-    cta: "Assinar Professional",
+    ctaKey: "professional" as const,
     destaque: false,
   },
   {
     id: "enterprise",
     nome: "Enterprise",
-    descricao: "Solução sob medida para grandes carteiras",
     icon: Crown,
     preco: { mensal: 0, anual: 0 },
-    moeda: "USD",
     cor: "amber",
     recursos: [
-      { label: "Tudo do Professional", ok: true },
-      { label: "Usuários ilimitados", ok: true },
-      { label: "SLA garantido 99,9%", ok: true },
-      { label: "Onboarding dedicado", ok: true },
-      { label: "Integrações customizadas", ok: true },
-      { label: "Gerente de conta exclusivo", ok: true },
-      { label: "Treinamento da equipe", ok: true },
-      { label: "Contrato personalizado", ok: true },
-      { label: "Suporte 24/7", ok: true },
+      { key: "everything" as PlanFeatureKey, ok: true },
+      { key: "usersUnlimited" as PlanFeatureKey, ok: true },
+      { key: "sla" as PlanFeatureKey, ok: true },
+      { key: "onboarding" as PlanFeatureKey, ok: true },
+      { key: "integrations" as PlanFeatureKey, ok: true },
+      { key: "manager" as PlanFeatureKey, ok: true },
+      { key: "training" as PlanFeatureKey, ok: true },
+      { key: "contract" as PlanFeatureKey, ok: true },
+      { key: "support247" as PlanFeatureKey, ok: true },
     ],
-    limite_dividas: -1,
-    limite_usuarios: -1,
-    cta: "Falar com vendas",
+    ctaKey: "enterprise" as const,
     destaque: false,
   },
 ];
@@ -152,8 +149,16 @@ const colorMap: Record<string, {
 };
 
 export default function PlanosPage() {
+  const t = useTranslations("plans");
   const [period, setPeriod] = useState<Period>("mensal");
   const currentPlan = "growth";
+
+  const faqItems = [
+    { q: t("faq.q1"), a: t("faq.a1") },
+    { q: t("faq.q2"), a: t("faq.a2") },
+    { q: t("faq.q3"), a: t("faq.a3") },
+    { q: t("faq.q4"), a: t("faq.a4") },
+  ];
 
   return (
     <div className="p-8">
@@ -161,13 +166,13 @@ export default function PlanosPage() {
       <div className="text-center mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium mb-4">
           <Star className="w-3.5 h-3.5" />
-          Plano atual: Growth
+          {t("badge")}
         </div>
         <h1 className="text-3xl font-bold text-slate-900 mb-3">
-          Escolha o plano ideal para sua carteira
+          {t("title")}
         </h1>
         <p className="text-slate-500 text-lg max-w-xl mx-auto">
-          Escale sua operação de cobrança internacional com as ferramentas certas
+          {t("sub")}
         </p>
 
         {/* Period toggle */}
@@ -181,7 +186,7 @@ export default function PlanosPage() {
                 : "text-slate-500 hover:text-slate-700"
             )}
           >
-            Mensal
+            {t("monthly")}
           </button>
           <button
             onClick={() => setPeriod("anual")}
@@ -192,9 +197,9 @@ export default function PlanosPage() {
                 : "text-slate-500 hover:text-slate-700"
             )}
           >
-            Anual
+            {t("annual")}
             <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">
-              -20%
+              {t("discount")}
             </span>
           </button>
         </div>
@@ -202,7 +207,7 @@ export default function PlanosPage() {
 
       {/* Plans grid */}
       <div className="grid grid-cols-4 gap-5 max-w-6xl mx-auto">
-        {plans.map((plan) => {
+        {plansData.map((plan) => {
           const colors = colorMap[plan.cor];
           const isCurrentPlan = plan.id === currentPlan;
           const isEnterprise = plan.id === "enterprise";
@@ -222,7 +227,7 @@ export default function PlanosPage() {
               {plan.destaque && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="bg-white text-blue-600 text-xs font-bold px-3 py-1 rounded-full shadow-md border border-blue-100">
-                    Mais popular
+                    {t("mostPopular")}
                   </span>
                 </div>
               )}
@@ -230,7 +235,7 @@ export default function PlanosPage() {
               {isCurrentPlan && !plan.destaque && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
-                    Plano atual
+                    {t("currentPlan")}
                   </span>
                 </div>
               )}
@@ -243,9 +248,6 @@ export default function PlanosPage() {
                 <h3 className={cn("text-xl font-bold", plan.destaque ? "text-white" : "text-slate-900")}>
                   {plan.nome}
                 </h3>
-                <p className={cn("text-sm mt-1", plan.destaque ? "text-blue-100" : "text-slate-500")}>
-                  {plan.descricao}
-                </p>
               </div>
 
               {/* Price */}
@@ -253,19 +255,19 @@ export default function PlanosPage() {
                 {isEnterprise ? (
                   <div>
                     <p className={cn("text-3xl font-bold", plan.destaque ? "text-white" : "text-slate-900")}>
-                      Sob consulta
+                      {t("custom")}
                     </p>
                     <p className={cn("text-sm mt-1", plan.destaque ? "text-blue-200" : "text-slate-400")}>
-                      Contrato personalizado
+                      {t("customSub")}
                     </p>
                   </div>
                 ) : price === 0 ? (
                   <div>
                     <p className={cn("text-3xl font-bold", plan.destaque ? "text-white" : "text-slate-900")}>
-                      Grátis
+                      {t("forever")}
                     </p>
                     <p className={cn("text-sm mt-1", plan.destaque ? "text-blue-200" : "text-slate-400")}>
-                      Para sempre
+                      {t("forever")}
                     </p>
                   </div>
                 ) : (
@@ -278,12 +280,12 @@ export default function PlanosPage() {
                         ${price}
                       </span>
                       <span className={cn("text-sm", plan.destaque ? "text-blue-200" : "text-slate-400")}>
-                        /mês
+                        {t("perMonth")}
                       </span>
                     </div>
                     {period === "anual" && (
                       <p className={cn("text-xs mt-1", plan.destaque ? "text-blue-200" : "text-slate-400")}>
-                        Cobrado anualmente (${price * 12}/ano)
+                        {t("billedAnnually", { value: price * 12 })}
                       </p>
                     )}
                   </div>
@@ -293,7 +295,7 @@ export default function PlanosPage() {
               {/* Features */}
               <ul className="space-y-2.5 flex-1 mb-6">
                 {plan.recursos.map((recurso) => (
-                  <li key={recurso.label} className="flex items-start gap-2">
+                  <li key={recurso.key} className="flex items-start gap-2">
                     {recurso.ok ? (
                       <Check
                         className={cn(
@@ -314,7 +316,7 @@ export default function PlanosPage() {
                           : "text-slate-300"
                       )}
                     >
-                      {recurso.label}
+                      {t(`features.${recurso.key}`)}
                     </span>
                   </li>
                 ))}
@@ -329,7 +331,7 @@ export default function PlanosPage() {
                 )}
                 disabled={isCurrentPlan}
               >
-                {isCurrentPlan ? "Plano atual" : plan.cta}
+                {isCurrentPlan ? t("currentPlan") : t(`cta.${plan.ctaKey}`)}
                 {!isCurrentPlan && <ChevronRight className="w-4 h-4" />}
               </button>
             </div>
@@ -339,26 +341,9 @@ export default function PlanosPage() {
 
       {/* FAQ / Trust */}
       <div className="mt-16 max-w-4xl mx-auto">
-        <h2 className="text-xl font-bold text-slate-900 text-center mb-8">Perguntas frequentes</h2>
+        <h2 className="text-xl font-bold text-slate-900 text-center mb-8">{t("faq.title")}</h2>
         <div className="grid grid-cols-2 gap-6">
-          {[
-            {
-              q: "Posso cancelar a qualquer momento?",
-              a: "Sim. Não há fidelidade. Você pode cancelar ou fazer downgrade a qualquer momento pela página de configurações.",
-            },
-            {
-              q: "Quais formas de pagamento são aceitas?",
-              a: "Aceitamos cartões de crédito internacionais (Visa, Mastercard, Amex) e transferência bancária para planos Enterprise.",
-            },
-            {
-              q: "O que acontece se eu ultrapassar os limites?",
-              a: "Você receberá uma notificação e poderá fazer upgrade imediatamente. Não há cobranças extras inesperadas.",
-            },
-            {
-              q: "Posso mudar de plano no meio do mês?",
-              a: "Sim. O upgrade é imediato e o valor é proporcional ao período restante. O downgrade ocorre no próximo ciclo.",
-            },
-          ].map(({ q, a }) => (
+          {faqItems.map(({ q, a }) => (
             <div key={q} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
               <h4 className="font-semibold text-slate-900 mb-2 text-sm">{q}</h4>
               <p className="text-slate-500 text-sm leading-relaxed">{a}</p>
@@ -367,12 +352,12 @@ export default function PlanosPage() {
         </div>
 
         <div className="mt-8 text-center bg-slate-50 rounded-2xl p-8 border border-slate-100">
-          <p className="text-slate-600 font-medium mb-1">Precisa de uma solução personalizada?</p>
+          <p className="text-slate-600 font-medium mb-1">{t("enterprise.title")}</p>
           <p className="text-slate-400 text-sm mb-4">
-            Nossa equipe de vendas pode criar um plano sob medida para grandes carteiras.
+            {t("enterprise.sub")}
           </p>
           <button className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl transition-all">
-            Falar com um especialista
+            {t("enterprise.cta")}
           </button>
         </div>
       </div>

@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { formatCurrency, formatDate, formatDateRelative, getStatusLabel } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { Debt, TimelineEvent } from "@/types";
 
 const statusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
@@ -114,6 +115,8 @@ export default function DebtDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const t = useTranslations("debts");
+  const tc = useTranslations("common");
   const [debt, setDebt] = useState<Debt | null>(null);
   const [debtLoading, setDebtLoading] = useState(true);
   const [newNote, setNewNote] = useState("");
@@ -220,7 +223,7 @@ export default function DebtDetailPage({
       <div className="p-8 flex items-center justify-center h-full">
         <div className="text-center text-slate-400">
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          Carregando...
+          {tc("loading")}
         </div>
       </div>
     );
@@ -231,9 +234,9 @@ export default function DebtDetailPage({
       <div className="p-8 flex items-center justify-center h-full">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500 font-medium">Dívida não encontrada</p>
+          <p className="text-slate-500 font-medium">{tc("noResults")}</p>
           <Link href="/dividas" className="text-blue-600 hover:underline text-sm mt-2 inline-block">
-            Voltar para lista
+            {tc("back")}
           </Link>
         </div>
       </div>
@@ -277,11 +280,11 @@ export default function DebtDetailPage({
             className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium rounded-xl transition-all text-sm"
           >
             <BotMessageSquare className="w-4 h-4" />
-            Assistente IA
+            {t("detail.openAssistant")}
           </Link>
           <button className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium rounded-xl transition-all text-sm">
             <Download className="w-4 h-4" />
-            Exportar
+            {t("detail.export")}
           </button>
           <button className="p-2.5 border border-slate-200 text-slate-400 hover:bg-slate-50 rounded-xl transition-all">
             <MoreHorizontal className="w-4 h-4" />
@@ -298,7 +301,7 @@ export default function DebtDetailPage({
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
               <div className="flex items-center gap-2 mb-2">
                 <DollarSign className="w-4 h-4 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Valor Original</span>
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">{t("detail.originalValue")}</span>
               </div>
               <p className="text-xl font-bold text-slate-900">
                 {formatCurrency(debt.valor_original, debt.moeda_original)}
@@ -309,39 +312,39 @@ export default function DebtDetailPage({
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
               <div className="flex items-center gap-2 mb-2">
                 <Calendar className="w-4 h-4 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Vencimento</span>
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">{t("detail.dueDate")}</span>
               </div>
               <p className={`text-xl font-bold ${diasVencido > 0 ? "text-red-600" : "text-slate-900"}`}>
                 {formatDate(debt.data_vencimento)}
               </p>
               {diasVencido > 0 ? (
-                <p className="text-sm text-red-500">{diasVencido} dias em atraso</p>
+                <p className="text-sm text-red-500">{t("detail.daysOverdue", { count: diasVencido })}</p>
               ) : (
-                <p className="text-sm text-slate-400">No prazo</p>
+                <p className="text-sm text-slate-400">{t("detail.onTime")}</p>
               )}
             </div>
 
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
               <div className="flex items-center gap-2 mb-2">
                 <Zap className="w-4 h-4 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Régua Ativa</span>
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">{t("detail.activeRule")}</span>
               </div>
               <p className="text-xl font-bold text-slate-900">{debt.regime_cobranca.filter(r => r.ativo).length}</p>
-              <p className="text-sm text-slate-400">de {debt.regime_cobranca.length} etapas</p>
+              <p className="text-sm text-slate-400">{t("detail.steps", { count: debt.regime_cobranca.length })}</p>
             </div>
           </div>
 
           {/* Régua de cobrança visual */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-semibold text-slate-900">Régua de Cobrança</h3>
-              <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">Editar</button>
+              <h3 className="font-semibold text-slate-900">{t("detail.collectionRule")}</h3>
+              <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">{t("detail.editRule")}</button>
             </div>
 
             {debt.regime_cobranca.length === 0 ? (
               <div className="text-center py-8">
                 <Bell className="w-8 h-8 text-slate-200 mx-auto mb-2" />
-                <p className="text-slate-400 text-sm">Nenhuma régua configurada</p>
+                <p className="text-slate-400 text-sm">{t("detail.noRule")}</p>
               </div>
             ) : (
               <div className="relative">
@@ -402,8 +405,8 @@ export default function DebtDetailPage({
           {/* Timeline */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-semibold text-slate-900">Histórico de Eventos</h3>
-              <span className="text-xs text-slate-400">{debt.historico.length} eventos</span>
+              <h3 className="font-semibold text-slate-900">{t("detail.history")}</h3>
+              <span className="text-xs text-slate-400">{t("detail.events", { count: debt.historico.length })}</span>
             </div>
 
             {/* Add note */}
@@ -415,7 +418,7 @@ export default function DebtDetailPage({
                 <textarea
                   value={newNote}
                   onChange={(e) => setNewNote(e.target.value)}
-                  placeholder="Adicionar anotação ou registro de contato..."
+                  placeholder={t("detail.addNote")}
                   rows={2}
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 />
@@ -425,7 +428,7 @@ export default function DebtDetailPage({
                       onClick={addNote}
                       className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all"
                     >
-                      Adicionar
+                      {tc("add")}
                     </button>
                   </div>
                 )}
@@ -444,7 +447,7 @@ export default function DebtDetailPage({
         <div className="space-y-5">
           {/* Status change */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-            <h4 className="font-semibold text-slate-900 mb-3 text-sm">Alterar Status</h4>
+            <h4 className="font-semibold text-slate-900 mb-3 text-sm">{t("table.status")}</h4>
             <div className="space-y-2">
               {Object.entries(statusConfig).map(([value, cfg]) => (
                 <button
@@ -467,7 +470,7 @@ export default function DebtDetailPage({
                 onClick={saveStatus}
                 className="w-full mt-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all"
               >
-                Salvar alteração
+                {t("detail.saveStatus")}
               </button>
             )}
           </div>
@@ -475,7 +478,7 @@ export default function DebtDetailPage({
           {/* Debtor info */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
             <div className="flex items-center justify-between mb-4">
-              <h4 className="font-semibold text-slate-900 text-sm">Dados do Devedor</h4>
+              <h4 className="font-semibold text-slate-900 text-sm">{t("detail.debtorInfo")}</h4>
               <button className="text-slate-400 hover:text-slate-600">
                 <Edit2 className="w-3.5 h-3.5" />
               </button>
@@ -645,9 +648,9 @@ export default function DebtDetailPage({
 
           {/* Documents */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-            <h4 className="font-semibold text-slate-900 text-sm mb-3">Documentos</h4>
+            <h4 className="font-semibold text-slate-900 text-sm mb-3">{t("detail.documents")}</h4>
             {debt.documentos.length === 0 ? (
-              <p className="text-sm text-slate-400">Nenhum documento anexado</p>
+              <p className="text-sm text-slate-400">{t("detail.noDocuments")}</p>
             ) : (
               <div className="space-y-2">
                 {debt.documentos.map((doc) => (
@@ -670,17 +673,16 @@ export default function DebtDetailPage({
           <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl p-5 border border-indigo-100">
             <div className="flex items-center gap-2 mb-3">
               <BotMessageSquare className="w-4 h-4 text-indigo-600" />
-              <h4 className="font-semibold text-indigo-900 text-sm">Sugestão da IA</h4>
+              <h4 className="font-semibold text-indigo-900 text-sm">{t("detail.aiSuggestion")}</h4>
             </div>
             <p className="text-sm text-indigo-700 leading-relaxed">
-              Com base no perfil do devedor e histórico de interações, sugiro oferecer um desconto de 10-15%
-              para pagamento à vista nos próximos 5 dias. Probabilidade de aceite: 72%.
+              {t("detail.aiSuggestionText")}
             </p>
             <Link
               href="/assistente"
               className="mt-3 flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 text-sm font-medium"
             >
-              Ver análise completa
+              {t("detail.fullAnalysis")}
               <ChevronLeft className="w-3.5 h-3.5 rotate-180" />
             </Link>
           </div>
