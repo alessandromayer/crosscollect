@@ -628,5 +628,268 @@
       "endpoints": "Available endpoints",
       "docsLink": "View full API documentation"
     }
+  },
+  "landingV2": {
+    "nav": {
+      "platform": "The Platform",
+      "howItWorks": "How it Works",
+      "whoItsFor": "Who it's for",
+      "pilotProgram": "Pilot Program",
+      "login": "Log in",
+      "cta": "Join the Pilot Program"
+    },
+    "hero": {
+      "badge": "Currently in MVP / Pilot Stage",
+      "headline1": "Sell to Brazil.",
+      "headline2": "We manage what comes next.",
+      "descriptor": "Cross-Border Contract & Revenue Operations",
+      "sub": "For U.S. companies doing business in Brazil: one platform for contracts, Pix and boleto payments, receivables, and renewals — built around how Brazil actually works, not how the U.S. assumes it does.",
+      "cta1": "Join the Pilot Program",
+      "cta2": "See How It Works",
+      "note": "We're an early-stage platform working with a small group of design partners. No public case studies or customer numbers yet — and we'd rather tell you that than make them up."
+    },
+    "problem": {
+      "badge": "The Problem",
+      "title": "Closing the deal in Brazil is the easy part.",
+      "sub": "Most U.S. companies expand into Brazil with a signed contract and no operational plan for what happens after — different currency, different payment habits, different legal system, different language.",
+      "card1": {
+        "title": "Contracts built for the wrong jurisdiction",
+        "desc": "U.S.-style agreements don't map cleanly onto Brazilian tax, invoicing, and legal requirements."
+      },
+      "card2": {
+        "title": "Payment rails that don't fit",
+        "desc": "Brazilian buyers pay via Pix and boleto — not U.S. credit cards or wire transfers."
+      },
+      "card3": {
+        "title": "No unified view of receivables",
+        "desc": "Brazil-based revenue lives in spreadsheets and email threads, disconnected from the rest of the business."
+      },
+      "card4": {
+        "title": "Compliance risk when things slip",
+        "desc": "Without local process, a late payment can escalate into a legal and reputational problem fast."
+      }
+    },
+    "platform": {
+      "badge": "The Platform",
+      "title": "Five modules. One operating layer for Brazil.",
+      "sub": "CrossCollect isn't a collections tool with extra features bolted on. Recovery is one module of five — most of the platform is about never needing it.",
+      "modules": {
+        "contracts": {
+          "name": "Contracts",
+          "desc": "Bilingual contract management built for the Brazilian market — local clauses, tax fields, and e-signature in one place."
+        },
+        "payments": {
+          "name": "Payments",
+          "desc": "Accept Pix, boleto, and card payments from Brazilian buyers without forcing them onto U.S. rails they don't use."
+        },
+        "receivables": {
+          "name": "Receivables",
+          "desc": "One currency-normalized dashboard for everything owed to you in Brazil — no more spreadsheets across two languages."
+        },
+        "recovery": {
+          "name": "Recovery",
+          "desc": "A structured, compliant escalation path for the accounts that go sideways — one module among five, not the whole product."
+        },
+        "renewals": {
+          "name": "Renewals",
+          "desc": "Track renewal dates and expansion signals so Brazil-based revenue doesn't quietly churn out from under you."
+        }
+      }
+    },
+    "howItWorks": {
+      "badge": "How It Works",
+      "title": "From signed contract to paid invoice",
+      "sub": "Six steps, built around the way Brazilian buyers actually transact.",
+      "steps": {
+        "step1": {
+          "title": "Connect your contracts",
+          "desc": "Bring in the agreements and invoices tied to your Brazilian customers."
+        },
+        "step2": {
+          "title": "Standardize for Brazil",
+          "desc": "We map currency, tax fields, and contract clauses to what's actually required locally."
+        },
+        "step3": {
+          "title": "Collect via local rails",
+          "desc": "Pix and boleto payment links go out in the format Brazilian buyers actually use."
+        },
+        "step4": {
+          "title": "Track it in one dashboard",
+          "desc": "Receivables, aging, and FX-normalized totals in a single bilingual view."
+        },
+        "step5": {
+          "title": "Escalate only when needed",
+          "desc": "Structured, compliant recovery kicks in for the exceptions — not by default."
+        },
+        "step6": {
+          "title": "Manage renewals proactively",
+          "desc": "See what's coming up for renewal or expansion before it becomes a surprise."
+        }
+      }
+    },
+    "pix": {
+      "badge": "Built for Pix",
+      "title": "Get paid the way Brazil actually pays.",
+      "sub": "Pix is Brazil's instant payment system, run by the Central Bank, and it's how the large majority of Brazilians and Brazilian businesses move money — settled in seconds, available 24/7, at effectively no cost to the payer. Asking a Brazilian buyer to pay by U.S. card or international wire adds friction most won't tolerate.",
+      "point1": {
+        "title": "Real-time settlement",
+        "desc": "Payments confirm in seconds, any day, any hour."
+      },
+      "point2": {
+        "title": "Central Bank-backed rail",
+        "desc": "Not a private processor — the national instant payment system."
+      },
+      "point3": {
+        "title": "Boleto as fallback",
+        "desc": "For buyers and use cases where Pix isn't the fit."
+      },
+      "demoCard": {
+        "label": "Payment link",
+        "demoTag": "Demo Data",
+        "amountLabel": "Amount due",
+        "amountNote": "≈ USD equivalent shown to your team",
+        "pixLabel": "Pix",
+        "pixNote": "Instant · 24/7",
+        "boletoLabel": "Boleto",
+        "boletoNote": "1–3 business days"
+      }
+    },
+    "corridor": {
+      "badge": "Phase One",
+      "title": "The U.S.–Brazil corridor, first",
+      "sub": "We're starting narrow on purpose: U.S. companies with customers, partners, or distributors in Brazil. One corridor, done properly, before we go anywhere else.",
+      "us": "United States",
+      "usNote": "Where you sell from",
+      "brazil": "Brazil",
+      "brazilNote": "Where your customers pay from",
+      "card1": {
+        "title": "A distinct legal & tax environment",
+        "desc": "Brazilian contract law, invoicing (NF-e), and consumer protection rules differ meaningfully from U.S. norms."
+      },
+      "card2": {
+        "title": "A distinct payment culture",
+        "desc": "Pix and boleto dominate; U.S. card and wire habits don't transfer directly."
+      },
+      "card3": {
+        "title": "Real, growing commercial ties",
+        "desc": "More U.S. companies are selling software, equipment, and services into Brazil — often without local infrastructure."
+      }
+    },
+    "whoItsFor": {
+      "badge": "Who It's For",
+      "title": "Built for U.S. teams selling into Brazil",
+      "sub": "If any of this sounds familiar, we'd like to talk to you.",
+      "card1": {
+        "title": "U.S. SaaS companies",
+        "desc": "Selling subscriptions to Brazilian customers without a local billing or collections setup."
+      },
+      "card2": {
+        "title": "Professional & consulting services",
+        "desc": "Invoicing Brazilian clients under contracts drafted for a U.S. legal context."
+      },
+      "card3": {
+        "title": "Equipment & machinery exporters",
+        "desc": "Managing multi-installment receivables tied to physical goods sold into Brazil."
+      },
+      "card4": {
+        "title": "Licensors & franchisors",
+        "desc": "Collecting recurring royalties or license fees from Brazilian partners and operators."
+      }
+    },
+    "mvp": {
+      "badge": "Where we are today",
+      "title": "This is an early-stage platform",
+      "sub": "CrossCollect is in MVP / pilot stage. We're building it directly with a small group of U.S. companies doing business in Brazil, not shipping it finished and hoping it fits. Some modules are live in the pilot; others are still in development.",
+      "items": {
+        "item1": "Contract intake & standardization",
+        "item2": "Pix & boleto payment links",
+        "item3": "Receivables dashboard",
+        "item4": "Structured recovery workflows",
+        "item5": "Renewals & expansion tracking"
+      },
+      "statusPilot": "In active pilot",
+      "statusDev": "In development",
+      "footnote": "No published customer list, revenue figures, or case studies yet — we'll share those when we have real ones to show."
+    },
+    "pilot": {
+      "badge": "Pilot Program",
+      "title": "Join the Pilot Program",
+      "sub": "We're onboarding a small number of U.S. companies with active or upcoming business in Brazil. You'll work directly with the team building the product.",
+      "form": {
+        "nameLabel": "Full name",
+        "namePlaceholder": "Jane Smith",
+        "emailLabel": "Work email",
+        "emailPlaceholder": "jane@company.com",
+        "companyLabel": "Company",
+        "companyPlaceholder": "Company, Inc.",
+        "sizeLabel": "Company size",
+        "sizePlaceholder": "Select...",
+        "size1": "1–10 employees",
+        "size2": "11–50 employees",
+        "size3": "51–200 employees",
+        "size4": "201+ employees",
+        "contextLabel": "What are you using today to manage Brazilian contracts or payments?",
+        "contextPlaceholder": "Spreadsheets, a local partner, nothing formal yet...",
+        "submit": "Join the Pilot Program",
+        "note": "We're onboarding a small number of design partners. No cost to apply.",
+        "successTitle": "You're on the list",
+        "successBody": "Thanks, {name}. We review pilot applications personally and will follow up by email to talk through fit and timing.",
+        "successBodyFallback": "there"
+      }
+    },
+    "research": {
+      "title": "Not ready for a pilot?",
+      "sub": "If you're researching cross-border payments, market entry, or Brazil operations and want to stay in the loop, join our research list instead.",
+      "namePlaceholder": "Name",
+      "emailPlaceholder": "Email",
+      "focusPlaceholder": "What are you researching? (e.g. cross-border payments, market entry, LATAM ops)",
+      "submit": "Request Research Access",
+      "successTitle": "Thanks — we'll be in touch.",
+      "successBody": "We'll reach out from a real person, not a mailing list."
+    },
+    "vision": {
+      "badge": "Where We're Headed",
+      "title": "The operating layer for cross-border revenue between the U.S. and Brazil",
+      "body": "We're starting with the U.S.–Brazil corridor and five core modules — contracts, payments, receivables, recovery, and renewals — because that's the problem we understand best today. Over time, the goal is a single operating layer for the full lifecycle of a cross-border commercial relationship, expanding to new corridors and workflows as the platform matures and as pilot partners tell us what's actually needed next."
+    },
+    "founder": {
+      "badge": "Founder",
+      "name": "Alessandro Mayer",
+      "role": "Founder, CrossCollect",
+      "bio": "Alessandro has spent his career in Customer Success and SaaS, working closely with companies on retention, expansion, and the operational realities of growing revenue across borders. Having lived and worked in both Brazil and the United States, he saw the same gap repeat itself: U.S. companies win business in Brazil, then have no reliable way to manage the contracts, payments, and receivables that follow. He started CrossCollect to close that gap — built as a working platform with early partners, not a pitch deck."
+    },
+    "finalCta": {
+      "title1": "Selling to Brazil?",
+      "title2": "Let's build the back office for it together.",
+      "sub": "Currently in MVP / pilot stage — a handful of design partner seats are open.",
+      "cta": "Join the Pilot Program"
+    },
+    "footer": {
+      "tagline": "Cross-Border Contract & Revenue Operations for U.S. companies doing business in Brazil. Currently in MVP / pilot stage.",
+      "platformTitle": "Platform",
+      "platformLinks": {
+        "contracts": "Contracts",
+        "payments": "Payments",
+        "receivables": "Receivables",
+        "recovery": "Recovery",
+        "renewals": "Renewals"
+      },
+      "companyTitle": "Company",
+      "companyLinks": {
+        "how": "How it Works",
+        "who": "Who it's for",
+        "pilot": "Pilot Program",
+        "research": "Research List"
+      },
+      "accountTitle": "Account",
+      "accountLinks": {
+        "login": "Log in",
+        "dashboard": "Dashboard"
+      },
+      "disclaimerLabel": "Disclaimer:",
+      "disclaimer": "CrossCollect is an early-stage product currently in MVP / pilot phase. Features described on this page reflect our product roadmap and intended functionality; some modules are in active pilot use while others are still in development and not yet generally available. Availability, exact functionality, and timelines may change. CrossCollect is not a law firm, collections agency, bank, or financial institution, and nothing on this page constitutes legal, tax, financial, or investment advice. Payment processing (including Pix and boleto) is enabled through third-party licensed providers, not held directly by CrossCollect. Recovery-related functionality is one module of the platform and is designed to operate within applicable Brazilian consumer protection and data protection (LGPD) law. Company names, figures, and dashboard views shown on this page are illustrative demo data, not real customer information, unless explicitly stated otherwise.",
+      "rights": "All rights reserved.",
+      "statusLabel": "MVP / Pilot Stage — building in the open"
+    }
   }
 }

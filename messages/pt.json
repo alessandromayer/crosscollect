@@ -628,5 +628,268 @@
       "endpoints": "Endpoints disponíveis",
       "docsLink": "Ver documentação completa da API"
     }
+  },
+  "landingV2": {
+    "nav": {
+      "platform": "A Plataforma",
+      "howItWorks": "Como Funciona",
+      "whoItsFor": "Para Quem É",
+      "pilotProgram": "Programa Piloto",
+      "login": "Entrar",
+      "cta": "Participar do Programa Piloto"
+    },
+    "hero": {
+      "badge": "Atualmente em fase de MVP / Piloto",
+      "headline1": "Venda para o Brasil.",
+      "headline2": "Nós cuidamos do que vem depois.",
+      "descriptor": "Operações Transfronteiriças de Contratos e Receita",
+      "sub": "Para empresas americanas que fazem negócios no Brasil: uma única plataforma para contratos, pagamentos via Pix e boleto, recebíveis e renovações — construída em torno de como o Brasil realmente funciona, não como os EUA presumem que funciona.",
+      "cta1": "Participar do Programa Piloto",
+      "cta2": "Ver Como Funciona",
+      "note": "Somos uma plataforma em estágio inicial, trabalhando com um pequeno grupo de parceiros de design. Ainda não temos estudos de caso públicos nem números de clientes — e preferimos dizer isso a inventar algo."
+    },
+    "problem": {
+      "badge": "O Problema",
+      "title": "Fechar negócio no Brasil é a parte fácil.",
+      "sub": "A maioria das empresas americanas se expande para o Brasil com um contrato assinado e nenhum plano operacional para o que acontece depois — moeda diferente, hábitos de pagamento diferentes, sistema jurídico diferente, idioma diferente.",
+      "card1": {
+        "title": "Contratos feitos para a jurisdição errada",
+        "desc": "Contratos no modelo americano não se encaixam bem nas exigências fiscais, de faturamento e legais brasileiras."
+      },
+      "card2": {
+        "title": "Meios de pagamento que não se encaixam",
+        "desc": "Compradores brasileiros pagam via Pix e boleto — não com cartão de crédito americano ou transferência internacional."
+      },
+      "card3": {
+        "title": "Nenhuma visão unificada dos recebíveis",
+        "desc": "A receita gerada no Brasil vive em planilhas e e-mails, desconectada do restante do negócio."
+      },
+      "card4": {
+        "title": "Risco de compliance quando algo falha",
+        "desc": "Sem um processo local, um pagamento atrasado pode rapidamente virar um problema jurídico e reputacional."
+      }
+    },
+    "platform": {
+      "badge": "A Plataforma",
+      "title": "Cinco módulos. Uma camada operacional para o Brasil.",
+      "sub": "O CrossCollect não é uma ferramenta de cobrança com recursos extras. Recuperação é um módulo entre cinco — a maior parte da plataforma existe para você nunca precisar dele.",
+      "modules": {
+        "contracts": {
+          "name": "Contratos",
+          "desc": "Gestão bilíngue de contratos, pensada para o mercado brasileiro — cláusulas locais, campos fiscais e assinatura eletrônica em um só lugar."
+        },
+        "payments": {
+          "name": "Pagamentos",
+          "desc": "Aceite Pix, boleto e cartão de compradores brasileiros, sem forçá-los a usar meios de pagamento americanos que eles não usam."
+        },
+        "receivables": {
+          "name": "Recebíveis",
+          "desc": "Um único painel com valores normalizados por moeda para tudo que é devido a você no Brasil — sem mais planilhas em dois idiomas."
+        },
+        "recovery": {
+          "name": "Recuperação",
+          "desc": "Um caminho de escalonamento estruturado e em conformidade para as contas que saem do trilho — um módulo entre cinco, não o produto inteiro."
+        },
+        "renewals": {
+          "name": "Renovações",
+          "desc": "Acompanhe datas de renovação e sinais de expansão para que a receita gerada no Brasil não se perca silenciosamente."
+        }
+      }
+    },
+    "howItWorks": {
+      "badge": "Como Funciona",
+      "title": "Do contrato assinado à fatura paga",
+      "sub": "Seis etapas, construídas em torno de como os compradores brasileiros realmente transacionam.",
+      "steps": {
+        "step1": {
+          "title": "Conecte seus contratos",
+          "desc": "Traga os contratos e faturas vinculados aos seus clientes brasileiros."
+        },
+        "step2": {
+          "title": "Padronize para o Brasil",
+          "desc": "Mapeamos moeda, campos fiscais e cláusulas contratuais conforme exigido localmente."
+        },
+        "step3": {
+          "title": "Receba pelos meios locais",
+          "desc": "Links de pagamento via Pix e boleto são enviados no formato que os compradores brasileiros usam de fato."
+        },
+        "step4": {
+          "title": "Acompanhe em um só painel",
+          "desc": "Recebíveis, aging e totais normalizados em câmbio em uma única visão bilíngue."
+        },
+        "step5": {
+          "title": "Escale apenas quando necessário",
+          "desc": "Recuperação estruturada e em conformidade entra em ação nas exceções — não por padrão."
+        },
+        "step6": {
+          "title": "Gerencie renovações de forma proativa",
+          "desc": "Veja o que está para renovar ou expandir antes que vire uma surpresa."
+        }
+      }
+    },
+    "pix": {
+      "badge": "Feito para o Pix",
+      "title": "Receba do jeito que o Brasil realmente paga.",
+      "sub": "O Pix é o sistema de pagamento instantâneo do Brasil, operado pelo Banco Central, e é como a grande maioria dos brasileiros e empresas brasileiras movimenta dinheiro — liquidado em segundos, disponível 24 horas por dia, 7 dias por semana, praticamente sem custo para quem paga. Pedir que um comprador brasileiro pague por cartão americano ou transferência internacional cria uma fricção que a maioria não vai aceitar.",
+      "point1": {
+        "title": "Liquidação em tempo real",
+        "desc": "Pagamentos são confirmados em segundos, em qualquer dia, a qualquer hora."
+      },
+      "point2": {
+        "title": "Trilho operado pelo Banco Central",
+        "desc": "Não é um processador privado — é o sistema nacional de pagamentos instantâneos."
+      },
+      "point3": {
+        "title": "Boleto como alternativa",
+        "desc": "Para compradores e casos de uso em que o Pix não é a melhor opção."
+      },
+      "demoCard": {
+        "label": "Link de pagamento",
+        "demoTag": "Dados de Demonstração",
+        "amountLabel": "Valor devido",
+        "amountNote": "≈ equivalente em USD mostrado para sua equipe",
+        "pixLabel": "Pix",
+        "pixNote": "Instantâneo · 24/7",
+        "boletoLabel": "Boleto",
+        "boletoNote": "1 a 3 dias úteis"
+      }
+    },
+    "corridor": {
+      "badge": "Fase Um",
+      "title": "O corredor EUA–Brasil, primeiro",
+      "sub": "Estamos começando de forma deliberadamente restrita: empresas americanas com clientes, parceiros ou distribuidores no Brasil. Um corredor, bem feito, antes de irmos para qualquer outro lugar.",
+      "us": "Estados Unidos",
+      "usNote": "De onde você vende",
+      "brazil": "Brasil",
+      "brazilNote": "De onde seus clientes pagam",
+      "card1": {
+        "title": "Um ambiente jurídico e fiscal distinto",
+        "desc": "O direito contratual brasileiro, o faturamento (NF-e) e as regras de proteção ao consumidor diferem significativamente das normas americanas."
+      },
+      "card2": {
+        "title": "Uma cultura de pagamento distinta",
+        "desc": "Pix e boleto dominam; hábitos americanos de cartão e transferência não se transferem diretamente."
+      },
+      "card3": {
+        "title": "Laços comerciais reais e crescentes",
+        "desc": "Mais empresas americanas estão vendendo software, equipamentos e serviços para o Brasil — muitas vezes sem infraestrutura local."
+      }
+    },
+    "whoItsFor": {
+      "badge": "Para Quem É",
+      "title": "Feito para times americanos que vendem para o Brasil",
+      "sub": "Se algo disso soa familiar, gostaríamos de falar com você.",
+      "card1": {
+        "title": "Empresas de SaaS americanas",
+        "desc": "Vendendo assinaturas para clientes brasileiros sem uma estrutura local de cobrança ou faturamento."
+      },
+      "card2": {
+        "title": "Serviços profissionais e de consultoria",
+        "desc": "Faturando clientes brasileiros com contratos redigidos para o contexto jurídico americano."
+      },
+      "card3": {
+        "title": "Exportadores de equipamentos e maquinário",
+        "desc": "Gerenciando recebíveis parcelados vinculados a bens físicos vendidos para o Brasil."
+      },
+      "card4": {
+        "title": "Licenciadores e franqueadores",
+        "desc": "Recebendo royalties recorrentes ou taxas de licenciamento de parceiros e operadores brasileiros."
+      }
+    },
+    "mvp": {
+      "badge": "Onde estamos hoje",
+      "title": "Esta é uma plataforma em estágio inicial",
+      "sub": "O CrossCollect está em fase de MVP / piloto. Estamos construindo a plataforma diretamente com um pequeno grupo de empresas americanas que fazem negócios no Brasil, em vez de lançá-la pronta e torcer para que sirva. Alguns módulos já estão ativos no piloto; outros ainda estão em desenvolvimento.",
+      "items": {
+        "item1": "Captação e padronização de contratos",
+        "item2": "Links de pagamento via Pix e boleto",
+        "item3": "Painel de recebíveis",
+        "item4": "Fluxos estruturados de recuperação",
+        "item5": "Acompanhamento de renovações e expansão"
+      },
+      "statusPilot": "Em piloto ativo",
+      "statusDev": "Em desenvolvimento",
+      "footnote": "Ainda não há lista pública de clientes, números de receita ou estudos de caso — vamos compartilhá-los quando tivermos exemplos reais para mostrar."
+    },
+    "pilot": {
+      "badge": "Programa Piloto",
+      "title": "Participe do Programa Piloto",
+      "sub": "Estamos aceitando um pequeno número de empresas americanas com negócios ativos ou previstos no Brasil. Você trabalhará diretamente com o time que está construindo o produto.",
+      "form": {
+        "nameLabel": "Nome completo",
+        "namePlaceholder": "Jane Smith",
+        "emailLabel": "E-mail corporativo",
+        "emailPlaceholder": "jane@empresa.com",
+        "companyLabel": "Empresa",
+        "companyPlaceholder": "Empresa Ltda.",
+        "sizeLabel": "Tamanho da empresa",
+        "sizePlaceholder": "Selecione...",
+        "size1": "1–10 funcionários",
+        "size2": "11–50 funcionários",
+        "size3": "51–200 funcionários",
+        "size4": "201+ funcionários",
+        "contextLabel": "O que você usa hoje para gerenciar contratos ou pagamentos no Brasil?",
+        "contextPlaceholder": "Planilhas, um parceiro local, nada formal ainda...",
+        "submit": "Participar do Programa Piloto",
+        "note": "Estamos aceitando um pequeno número de parceiros de design. Sem custo para se inscrever.",
+        "successTitle": "Você está na lista",
+        "successBody": "Obrigado, {name}. Analisamos as inscrições do piloto pessoalmente e entraremos em contato por e-mail para conversar sobre encaixe e cronograma.",
+        "successBodyFallback": "você"
+      }
+    },
+    "research": {
+      "title": "Ainda não está pronto para o piloto?",
+      "sub": "Se você está pesquisando pagamentos transfronteiriços, entrada de mercado ou operações no Brasil e quer ficar por dentro, entre na nossa lista de pesquisa.",
+      "namePlaceholder": "Nome",
+      "emailPlaceholder": "E-mail",
+      "focusPlaceholder": "O que você está pesquisando? (ex.: pagamentos transfronteiriços, entrada de mercado, operações na América Latina)",
+      "submit": "Solicitar Acesso à Pesquisa",
+      "successTitle": "Obrigado — entraremos em contato.",
+      "successBody": "Vamos falar com você a partir de uma pessoa de verdade, não de uma lista de e-mail."
+    },
+    "vision": {
+      "badge": "Para Onde Estamos Indo",
+      "title": "A camada operacional para receita transfronteiriça entre EUA e Brasil",
+      "body": "Estamos começando pelo corredor EUA–Brasil e por cinco módulos centrais — contratos, pagamentos, recebíveis, recuperação e renovações — porque esse é o problema que entendemos melhor hoje. Com o tempo, o objetivo é ter uma única camada operacional para todo o ciclo de vida de uma relação comercial transfronteiriça, expandindo para novos corredores e fluxos de trabalho à medida que a plataforma amadurece e que os parceiros do piloto nos dizem o que realmente é necessário a seguir."
+    },
+    "founder": {
+      "badge": "Fundador",
+      "name": "Alessandro Mayer",
+      "role": "Fundador, CrossCollect",
+      "bio": "Alessandro construiu sua carreira em Customer Success e SaaS, trabalhando de perto com empresas em retenção, expansão e nas realidades operacionais de crescer receita além-fronteiras. Tendo vivido e trabalhado tanto no Brasil quanto nos Estados Unidos, ele viu o mesmo problema se repetir: empresas americanas conquistam negócios no Brasil e depois não têm uma forma confiável de gerenciar os contratos, pagamentos e recebíveis que vêm a seguir. Ele criou o CrossCollect para resolver essa lacuna — construído como uma plataforma funcional junto com os primeiros parceiros, não como um pitch deck."
+    },
+    "finalCta": {
+      "title1": "Vendendo para o Brasil?",
+      "title2": "Vamos construir o back office para isso juntos.",
+      "sub": "Atualmente em fase de MVP / piloto — algumas vagas para parceiros de design ainda estão abertas.",
+      "cta": "Participar do Programa Piloto"
+    },
+    "footer": {
+      "tagline": "Operações Transfronteiriças de Contratos e Receita para empresas americanas que fazem negócios no Brasil. Atualmente em fase de MVP / piloto.",
+      "platformTitle": "Plataforma",
+      "platformLinks": {
+        "contracts": "Contratos",
+        "payments": "Pagamentos",
+        "receivables": "Recebíveis",
+        "recovery": "Recuperação",
+        "renewals": "Renovações"
+      },
+      "companyTitle": "Empresa",
+      "companyLinks": {
+        "how": "Como Funciona",
+        "who": "Para Quem É",
+        "pilot": "Programa Piloto",
+        "research": "Lista de Pesquisa"
+      },
+      "accountTitle": "Conta",
+      "accountLinks": {
+        "login": "Entrar",
+        "dashboard": "Painel"
+      },
+      "disclaimerLabel": "Aviso legal:",
+      "disclaimer": "O CrossCollect é um produto em estágio inicial, atualmente em fase de MVP / piloto. Os recursos descritos nesta página refletem nosso roteiro de produto e a funcionalidade pretendida; alguns módulos estão em uso ativo no piloto, enquanto outros ainda estão em desenvolvimento e não estão disponíveis de forma geral. Disponibilidade, funcionalidade exata e prazos podem mudar. O CrossCollect não é um escritório de advocacia, agência de cobrança, banco ou instituição financeira, e nada nesta página constitui aconselhamento jurídico, fiscal, financeiro ou de investimento. O processamento de pagamentos (incluindo Pix e boleto) é viabilizado por provedores terceiros licenciados, e não é mantido diretamente pelo CrossCollect. As funcionalidades relacionadas à recuperação são um módulo da plataforma, projetado para operar dentro da legislação brasileira aplicável de proteção ao consumidor e de proteção de dados (LGPD). Nomes de empresas, números e telas de painel exibidos nesta página são dados ilustrativos de demonstração, não informações reais de clientes, salvo indicação expressa em contrário.",
+      "rights": "Todos os direitos reservados.",
+      "statusLabel": "Fase de MVP / Piloto — construindo em público"
+    }
   }
 }
