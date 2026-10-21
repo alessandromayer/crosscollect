@@ -2,7 +2,7 @@
 -- Never apply without first reviewing existing tenant data and policies.
 ALTER TABLE public.credores ADD COLUMN IF NOT EXISTS owner_user_id uuid REFERENCES auth.users(id);
 CREATE UNIQUE INDEX IF NOT EXISTS credores_owner_user_id_key ON public.credores(owner_user_id) WHERE owner_user_id IS NOT NULL;
-ALTER TABLE public.dividas ALTER COLUMN credor_id SET NOT NULL;
+-- IMPORTANT: existing orphan records require review before enforcing NOT NULL.\n-- Do not modify historical rows automatically.
 DROP POLICY IF EXISTS allow_all_credores ON public.credores;
 DROP POLICY IF EXISTS allow_all_dividas ON public.dividas;
 DROP POLICY IF EXISTS allow_all_historico ON public.historico_acoes;
