@@ -3,20 +3,27 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase";
 import { Eye, EyeOff, Globe2, TrendingUp, Shield, Zap } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({ email: "", password: "" });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate login
-    await new Promise((r) => setTimeout(r, 1000));
-    router.push("/dashboard");
+    setError("");
+    try {
+      const { error: authError } = await createClient().auth.signInWithPassword({ email: form.email, password: form.password });
+      if (authError) { setError("E-mail ou senha inválidos."); return; }
+      router.refresh();
+      router.push("/dashboard");
+    } catch { setError("Não foi possível entrar. Tente novamente."); }
+    finally { setIsLoading(false); }
   }
 
   return (
@@ -100,6 +107,7 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
+              {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   E-mail
