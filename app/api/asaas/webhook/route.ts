@@ -20,6 +20,11 @@ interface AsaasWebhookPayload {
 const PAID_EVENTS = ["PAYMENT_RECEIVED", "PAYMENT_CONFIRMED"];
 
 export async function POST(req: NextRequest) {
+  const expected = process.env.ASAAS_WEBHOOK_AUTH_TOKEN;
+  const supplied = req.headers.get("asaas-access-token");
+  if (!expected || !supplied || supplied.length !== expected.length) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  const { timingSafeEqual } = await import("node:crypto");
+  if (!timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   try {
     const payload = (await req.json()) as AsaasWebhookPayload;
     const { event, payment } = payload;
