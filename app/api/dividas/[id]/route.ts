@@ -35,7 +35,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-// PATCH /api/dividas/[id] — update status or add timeline event
+// PATCH /api/dividas/[id] — administrative status or audit note only.
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireAuth();
   if (auth.error) return auth.error;
@@ -44,44 +44,45 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (!credorId) return NextResponse.json({ error: "Empresa não vinculada" }, { status: 403 });
     const db = getSupabaseAdmin();
     const body = await req.json();
-
-    const updates: Record<string, unknown> = {};
-    if (body.status) {
-      if (!["pendente", "em_negociacao", "pago", "vencido", "cancelado"].includes(body.status)) return NextResponse.json({ error: "Status inválido" }, { status: 400 });
-      updates.status = body.status;
-      if (body.status === "pago") updates.pago_em = new Date().toISOString();
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
     }
+    const validStatuses = ["pendente", "em_negociacao", "vencido", "cancelado"];
+    if (body.status !== undefined && (typeof body.status !== "string" || !validStatuses.includes(body.status))) {
+      return NextResponse.json({ error: "Status inválido; pagamentos exigem confirmação verificada" }, { status: 400 });
+    }
+    if (body.nota !== undefined && (typeof body.nota !== "string" || body.nota.trim().length > 2000)) {
+      return NextResponse.json({ error: "Observação inválida" }, { status: 400 });
+    }
+    const nota = typeof body.nota === "string" ? body.nota.trim() : "";
+    if (!body.status && !nota) return NextResponse.json({ error: "Nenhuma alteração" }, { status: 400 });
 
-    if (!body.status && !body.nota) return NextResponse.json({ error: "Nenhuma alteração" }, { status: 400 });
-    const { data, error } = await db
-      .from("dividas")
-      .update(updates)
-      .eq("id", params.id)
-      .eq("credor_id", credorId)
-      .select()
-      .single();
+    const { data: existing, error: lookupError } = await db.from("dividas")
+      .select("*").eq("id", params.id).eq("credor_id", credorId).maybeSingle();
+    if (lookupError) throw lookupError;
+    if (!existing) return NextResponse.json({ error: "Dívida não encontrada" }, { status: 404 });
 
-    if (error) throw error;
-
-    // Log timeline event
+    let updated = existing;
     if (body.status) {
-      await db.from("historico_acoes").insert({
-        divida_id: params.id,
-        tipo: "atualizacao",
-        descricao: `Status alterado para "${body.status}"`,
+      const result = await db.from("dividas").update({ status: body.status })
+        .eq("id", params.id).eq("credor_id", credorId).select().single();
+      if (result.error) throw result.error;
+      updated = result.data;
+    }
+    const events = [];
+    if (body.status) events.push(`Status alterado para "${body.status}"`);
+    if (nota) events.push(nota);
+    for (const descricao of events) {
+      const { error: logError } = await db.from("historico_acoes").insert({
+        divida_id: params.id, tipo: "atualizacao", descricao,
         autor: auth.user!.email || auth.user!.id,
       });
+      if (logError) {
+        console.error("[PATCH /api/dividas/[id]] audit log failed", logError);
+        return NextResponse.json({ error: "Alteração realizada, mas falhou o registro do histórico" }, { status: 500 });
+      }
     }
-    if (body.nota) {
-      await db.from("historico_acoes").insert({
-        divida_id: params.id,
-        tipo: "atualizacao",
-        descricao: body.nota,
-        autor: auth.user!.email || auth.user!.id,
-      });
-    }
-
-    return NextResponse.json(data);
+    return NextResponse.json(updated);
   } catch (err) {
     console.error("[PATCH /api/dividas/[id]]", err);
     return NextResponse.json({ error: "Erro ao atualizar dívida" }, { status: 500 });
