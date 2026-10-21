@@ -28,6 +28,11 @@ export async function POST(req: NextRequest) {
   try {
     const payload = (await req.json()) as AsaasWebhookPayload;
     const { event, payment } = payload;
+    if (typeof event !== "string" || !payment || typeof payment.id !== "string" ||
+        !/^[a-zA-Z0-9_-]{1,100}$/.test(payment.id) ||
+        typeof payment.billingType !== "string" || !Number.isFinite(payment.value)) {
+      return NextResponse.json({ error: "Evento inválido" }, { status: 400 });
+    }
 
     console.log(`[asaas/webhook] ${event} | ${payment.id} | ${payment.status}`);
 
@@ -44,33 +49,42 @@ export async function POST(req: NextRequest) {
         .single();
 
       if (pagamento) {
+        const { data: existingDebt, error: debtReadError } = await db
+          .from("dividas").select("id, status").eq("id", pagamento.divida_id).single();
+        if (debtReadError || !existingDebt) throw debtReadError || new Error("Dívida não encontrada");
+        // Duplicate webhook delivery must not repeat payment updates or audit events.
+        if (existingDebt.status === "pago") return NextResponse.json({ received: true, duplicate: true });
         // Mark pagamento as paid
         if (payment.billingType === "BOLETO") {
-          await db
+          const { error: paymentError } = await db
             .from("pagamentos_asaas")
             .update({ status_boleto: "RECEIVED", pago_em: new Date().toISOString() })
             .eq("id", pagamento.id);
+          if (paymentError) throw paymentError;
         } else {
-          await db
+          const { error: paymentError } = await db
             .from("pagamentos_asaas")
             .update({ status_pix: "RECEIVED", pago_em: new Date().toISOString() })
             .eq("id", pagamento.id);
+          if (paymentError) throw paymentError;
         }
 
         // Mark the debt as paid
-        await db
+        const { error: debtError } = await db
           .from("dividas")
           .update({ status: "pago", pago_em: new Date().toISOString() })
           .eq("id", pagamento.divida_id);
+        if (debtError) throw debtError;
 
         // Log in timeline
-        await db.from("historico_acoes").insert({
+        const { error: historyError } = await db.from("historico_acoes").insert({
           divida_id: pagamento.divida_id,
           tipo: "pagamento",
           descricao: `Pagamento confirmado via ${payment.billingType} — R$ ${payment.netValue ?? payment.value}`,
           valor: payment.netValue ?? payment.value,
           autor: "Asaas Webhook",
         });
+        if (historyError) throw historyError;
 
         console.log(`[asaas/webhook] Debt ${pagamento.divida_id} marked as PAID`);
       }
@@ -79,6 +93,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (err) {
     console.error("[asaas/webhook] Error:", err);
-    return NextResponse.json({ received: true });
+    return NextResponse.json({ error: "Falha ao processar evento" }, { status: 500 });
   }
 }
