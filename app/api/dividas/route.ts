@@ -1,14 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseAdmin, DEFAULT_CREDOR_ID, rowToDebt, toBRL, type DbDivida, type DbHistorico } from "@/lib/supabase-admin";
+import { requireAuth } from "@/lib/require-auth";
+import { getOwnCredorId } from "@/lib/tenant";
+import { getSupabaseAdmin, rowToDebt, toBRL, type DbDivida, type DbHistorico } from "@/lib/supabase-admin";
 
 // GET /api/dividas — list all debts for default creditor
 export async function GET() {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
   try {
+    const credorId = await getOwnCredorId(auth.user!.id);
+    if (!credorId) return NextResponse.json({ error: "Empresa não vinculada" }, { status: 403 });
     const db = getSupabaseAdmin();
     const { data, error } = await db
       .from("dividas")
       .select("*")
-      .eq("credor_id", DEFAULT_CREDOR_ID)
+      .eq("credor_id", credorId)
       .order("criado_em", { ascending: false });
 
     if (error) throw error;
@@ -23,16 +29,21 @@ export async function GET() {
 
 // POST /api/dividas — create a new debt
 export async function POST(req: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
   try {
+    const credorId = await getOwnCredorId(auth.user!.id);
+    if (!credorId) return NextResponse.json({ error: "Empresa não vinculada" }, { status: 403 });
     const db = getSupabaseAdmin();
     const body = await req.json();
 
+    if (!Number.isFinite(Number(body.valor)) || Number(body.valor) <= 0 || !body.devedor_nome || !body.devedor_doc || !body.descricao) return NextResponse.json({ error: "Dados obrigatórios inválidos" }, { status: 400 });
     const valorBrl = toBRL(Number(body.valor), body.moeda || "USD");
 
     const { data, error } = await db
       .from("dividas")
       .insert({
-        credor_id: DEFAULT_CREDOR_ID,
+        credor_id: credorId,
         devedor_nome: body.devedor_nome,
         devedor_doc: body.devedor_doc,
         devedor_email: body.devedor_email || null,
@@ -60,7 +71,7 @@ export async function POST(req: NextRequest) {
       divida_id: (data as DbDivida).id,
       tipo: "cadastro",
       descricao: "Dívida cadastrada no sistema",
-      autor: "João Silva",
+      autor: auth.user!.email || auth.user!.id,
     });
 
     const { data: hist } = await db
