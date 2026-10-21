@@ -1,3 +1,5 @@
+import { requireAuth } from "@/lib/require-auth";
+import { NextResponse as SecurityResponse } from "next/server";
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 
@@ -28,6 +30,9 @@ Use formatação markdown quando apropriado (negrito, listas, etc.).
 Quando relevante, cite aspectos legais e culturais específicos do Brasil.`;
 
 export async function POST(request: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+  return SecurityResponse.json({ error: "Integração temporariamente desativada até a validação de permissões e modo de testes." }, { status: 503 });
   try {
     const { messages } = await request.json();
 
