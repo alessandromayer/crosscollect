@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result);
   } catch (err) {
     console.error("[asaas/criar-cobranca]", err);
-    const message = err instanceof Error ? err.message : "Erro desconhecido";
+    const message = "Erro ao criar cobrança. Consulte os logs do servidor.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
