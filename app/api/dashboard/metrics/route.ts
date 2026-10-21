@@ -1,14 +1,20 @@
 import { NextResponse } from "next/server";
-import { getSupabaseAdmin, DEFAULT_CREDOR_ID } from "@/lib/supabase-admin";
+import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { requireAuth } from "@/lib/require-auth";
+import { getOwnCredorId } from "@/lib/tenant";
 
 export async function GET() {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
   try {
+    const credorId = await getOwnCredorId(auth.user!.id);
+    if (!credorId) return NextResponse.json({ error: "Empresa não vinculada à conta" }, { status: 403 });
     const db = getSupabaseAdmin();
 
     const { data: dividas, error } = await db
       .from("dividas")
       .select("id, status, valor, moeda, valor_brl, criado_em, pago_em")
-      .eq("credor_id", DEFAULT_CREDOR_ID);
+      .eq("credor_id", credorId);
 
     if (error) throw error;
 
@@ -36,7 +42,7 @@ export async function GET() {
     const { data: recent } = await db
       .from("dividas")
       .select("id, devedor_nome, devedor_doc, descricao, valor, moeda, valor_brl, data_vencimento, status")
-      .eq("credor_id", DEFAULT_CREDOR_ID)
+      .eq("credor_id", credorId)
       .order("criado_em", { ascending: false })
       .limit(5);
 
