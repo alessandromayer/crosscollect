@@ -1,3 +1,5 @@
+import { requireAuth } from "@/lib/require-auth";
+import { NextResponse as SecurityResponse } from "next/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getResend, FROM_EMAIL } from "@/lib/resend";
 import {
@@ -26,6 +28,9 @@ export interface SendEmailPayload {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+  return SecurityResponse.json({ error: "Integração temporariamente desativada até a validação de permissões e modo de testes." }, { status: 503 });
   try {
     const body: SendEmailPayload = await request.json();
     const { tipo, destinatario, divida, nomeCredor } = body;
