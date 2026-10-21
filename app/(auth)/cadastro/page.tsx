@@ -3,12 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase";
 import { Eye, EyeOff, Globe2, Check } from "lucide-react";
 
 export default function CadastroPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [form, setForm] = useState({
     nome: "",
     email: "",
@@ -26,8 +29,14 @@ export default function CadastroPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    router.push("/dashboard");
+    setError(""); setMessage("");
+    try {
+      const { data, error: authError } = await createClient().auth.signUp({ email: form.email, password: form.password, options: { data: { full_name: form.nome, company_name: form.empresa, country: form.pais } } });
+      if (authError) { setError(authError.message); return; }
+      if (!data.user) { setError("Não foi possível criar a conta."); return; }
+      setMessage("Cadastro recebido. Confirme seu e-mail, se solicitado. O acesso à empresa será ativado após a validação do piloto.");
+    } catch { setError("Erro ao criar conta. Tente novamente."); }
+    finally { setIsLoading(false); }
   }
 
   return (
@@ -65,6 +74,8 @@ export default function CadastroPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+            {message && <p role="status" className="text-sm text-green-700">{message}</p>}
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
