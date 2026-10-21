@@ -1,3 +1,5 @@
+import { requireAuth } from "@/lib/require-auth";
+import { NextResponse as SecurityResponse } from "next/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getTwilioClient, WHATSAPP_FROM } from "@/lib/twilio";
 
@@ -84,6 +86,9 @@ Obrigado pela colaboração! 🙏`,
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+  return SecurityResponse.json({ error: "Integração temporariamente desativada até a validação de permissões e modo de testes." }, { status: 503 });
   try {
     const body: SendWhatsAppPayload = await request.json();
     const { tipo, destinatario } = body;
