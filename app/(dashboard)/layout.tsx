@@ -1,5 +1,5 @@
 import { Sidebar } from "@/components/sidebar";
-import { createServerClient } from "@/lib/supabase";
+import { createServerClient } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
