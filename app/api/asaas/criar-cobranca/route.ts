@@ -1,3 +1,5 @@
+import { requireAuth } from "@/lib/require-auth";
+import { NextResponse as SecurityResponse } from "next/server";
 import { NextRequest, NextResponse } from "next/server";
 import {
   createOrFindCustomer,
@@ -8,6 +10,9 @@ import {
 import { getSupabaseAdmin } from "@/lib/supabase-admin";
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+  return SecurityResponse.json({ error: "Integração temporariamente desativada até a validação de permissões e modo de testes." }, { status: 503 });
   try {
     const body = await req.json();
     const { devedor, valor, descricao, dataVencimento, divida_id } = body as {
