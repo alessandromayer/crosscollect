@@ -34,11 +34,11 @@ export default function LoginPage() {
           <div className="space-y-8">
             <div>
               <h1 className="text-4xl font-bold text-white leading-tight mb-4">
-                Cobrança internacional<br />
-                <span className="text-blue-400">sem fronteiras</span>
+                Contratos e recebíveis<br />
+                <span className="text-blue-400">entre fronteiras</span>
               </h1>
               <p className="text-slate-400 text-lg leading-relaxed">
-                Recupere seus ativos no Brasil com eficiência, conformidade jurídica e inteligência artificial.
+                Uma plataforma em desenvolvimento para acompanhar contratos, recebimentos e cobranças de empresas internacionais com clientes no Brasil.
               </p>
             </div>
 
@@ -46,18 +46,18 @@ export default function LoginPage() {
               {[
                 {
                   icon: TrendingUp,
-                  title: "68% de taxa de recuperação",
-                  desc: "Régua de cobrança inteligente e automatizada",
+                  title: "Acompanhamento de recebíveis",
+                  desc: "Organize vencimentos e acompanhe cobranças em um só lugar",
                 },
                 {
                   icon: Shield,
-                  title: "100% conforme com a LGPD",
-                  desc: "Proteção de dados e segurança jurídica garantida",
+                  title: "Privacidade em foco",
+                  desc: "A proteção de dados faz parte dos requisitos do produto",
                 },
                 {
                   icon: Zap,
-                  title: "Assistente IA incluso",
-                  desc: "Estratégias personalizadas para cada devedor",
+                  title: "Automação em desenvolvimento",
+                  desc: "Fluxos de comunicação para reduzir tarefas manuais",
                 },
               ].map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="flex items-start gap-4">
@@ -76,8 +76,7 @@ export default function LoginPage() {
 
         <div className="border-t border-slate-700 pt-8">
           <p className="text-slate-500 text-sm">
-            Mais de 200 credores internacionais confiam na CrossCollect para gerenciar
-            R$ 50M+ em cobranças ativas no Brasil.
+            CrossCollect está em fase de MVP. Funcionalidades e disponibilidade podem mudar.
           </p>
         </div>
       </div>
