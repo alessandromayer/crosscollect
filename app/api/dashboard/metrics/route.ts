@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { createServerClient } from "@/lib/supabase-server";
 import { requireAuth } from "@/lib/require-auth";
 import { getOwnCredorId } from "@/lib/tenant";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const auth = await requireAuth();
@@ -9,7 +11,7 @@ export async function GET() {
   try {
     const credorId = await getOwnCredorId(auth.user!.id);
     if (!credorId) return NextResponse.json({ error: "Empresa não vinculada à conta" }, { status: 403 });
-    const db = getSupabaseAdmin();
+    const db = createServerClient();
 
     const { data: dividas, error } = await db
       .from("dividas")
