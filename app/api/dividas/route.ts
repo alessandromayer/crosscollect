@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/require-auth";
 import { getOwnCredorId } from "@/lib/tenant";
-import { getSupabaseAdmin, rowToDebt, toBRL, type DbDivida, type DbHistorico } from "@/lib/supabase-admin";
+import { rowToDebt, toBRL, type DbDivida, type DbHistorico } from "@/lib/supabase-admin";
+import { createServerClient } from "@/lib/supabase-server";
 
 // GET /api/dividas — list all debts for default creditor
 export async function GET() {
@@ -10,7 +11,7 @@ export async function GET() {
   try {
     const credorId = await getOwnCredorId(auth.user!.id);
     if (!credorId) return NextResponse.json({ error: "Empresa não vinculada" }, { status: 403 });
-    const db = getSupabaseAdmin();
+    const db = createServerClient();
     const { data, error } = await db
       .from("dividas")
       .select("*")
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
   try {
     const credorId = await getOwnCredorId(auth.user!.id);
     if (!credorId) return NextResponse.json({ error: "Empresa não vinculada" }, { status: 403 });
-    const db = getSupabaseAdmin();
+    const db = createServerClient();
     const body = await req.json();
 
     if (!Number.isFinite(Number(body.valor)) || Number(body.valor) <= 0 || !body.devedor_nome || !body.devedor_doc || !body.descricao) return NextResponse.json({ error: "Dados obrigatórios inválidos" }, { status: 400 });
@@ -67,12 +68,13 @@ export async function POST(req: NextRequest) {
     if (error) throw error;
 
     // Insert initial timeline event
-    await db.from("historico_acoes").insert({
+    const { error: historyError } = await db.from("historico_acoes").insert({
       divida_id: (data as DbDivida).id,
       tipo: "cadastro",
       descricao: "Dívida cadastrada no sistema",
       autor: auth.user!.email || auth.user!.id,
     });
+    if (historyError) console.error("[POST /api/dividas] historical event not saved", historyError);
 
     const { data: hist } = await db
       .from("historico_acoes")
