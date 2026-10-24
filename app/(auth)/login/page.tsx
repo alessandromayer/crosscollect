@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
-import { Eye, EyeOff, Globe2, TrendingUp, Shield, Zap } from "lucide-react";
+import { Eye, EyeOff, Globe2, TrendingUp, Shield, FileText } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -45,7 +45,7 @@ export default function LoginPage() {
                 <span className="text-blue-400">sem fronteiras</span>
               </h1>
               <p className="text-slate-400 text-lg leading-relaxed">
-                Recupere seus ativos no Brasil com eficiência, conformidade jurídica e inteligência artificial.
+                Organize recebíveis internacionais com devedores no Brasil.
               </p>
             </div>
 
@@ -53,18 +53,18 @@ export default function LoginPage() {
               {[
                 {
                   icon: TrendingUp,
-                  title: "68% de taxa de recuperação",
-                  desc: "Régua de cobrança inteligente e automatizada",
+                  title: "Gestão de recebíveis",
+                  desc: "Cadastro e acompanhamento das dívidas da sua empresa",
                 },
                 {
                   icon: Shield,
-                  title: "100% conforme com a LGPD",
-                  desc: "Proteção de dados e segurança jurídica garantida",
+                  title: "Acesso individual",
+                  desc: "Autenticação por e-mail e senha",
                 },
                 {
-                  icon: Zap,
-                  title: "Assistente IA incluso",
-                  desc: "Estratégias personalizadas para cada devedor",
+                  icon: FileText,
+                  title: "Histórico dos casos",
+                  desc: "Registro de alterações e observações",
                 },
               ].map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="flex items-start gap-4">
@@ -83,8 +83,7 @@ export default function LoginPage() {
 
         <div className="border-t border-slate-700 pt-8">
           <p className="text-slate-500 text-sm">
-            Mais de 200 credores internacionais confiam na CrossCollect para gerenciar
-            R$ 50M+ em cobranças ativas no Brasil.
+            Acesso ao piloto mediante validação da conta e da empresa.
           </p>
         </div>
       </div>
@@ -109,11 +108,13 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label htmlFor="login-email" className="block text-sm font-medium text-slate-700 mb-1.5">
                   E-mail
                 </label>
                 <input
+                  id="login-email"
                   type="email"
+                  autoComplete="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="seu@email.com"
@@ -124,17 +125,13 @@ export default function LoginPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-sm font-medium text-slate-700">Senha</label>
-                  <Link
-                    href="/recuperar-senha"
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    Esqueceu?
-                  </Link>
+                  <label htmlFor="login-password" className="block text-sm font-medium text-slate-700">Senha</label>
                 </div>
                 <div className="relative">
                   <input
+                    id="login-password"
                     type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
                     value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
                     placeholder="••••••••"
@@ -143,6 +140,8 @@ export default function LoginPage() {
                   />
                   <button
                     type="button"
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                    aria-pressed={showPassword}
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   >
@@ -174,17 +173,14 @@ export default function LoginPage() {
               <p className="text-slate-500 text-sm">
                 Não tem uma conta?{" "}
                 <Link href="/cadastro" className="text-blue-600 hover:text-blue-700 font-semibold">
-                  Criar conta grátis
+                  Criar conta
                 </Link>
               </p>
             </div>
           </div>
 
-          <p className="text-center text-slate-400 text-xs mt-6">
-            Ao entrar, você concorda com nossos{" "}
-            <a href="#" className="underline hover:text-slate-600">Termos de Uso</a>
-            {" "}e{" "}
-            <a href="#" className="underline hover:text-slate-600">Política de Privacidade</a>
+          <p className="text-center text-slate-500 text-xs mt-6">
+            A recuperação automática de senha ainda não está disponível no piloto.
           </p>
         </div>
       </div>
