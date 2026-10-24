@@ -58,30 +58,18 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const nota = typeof body.nota === "string" ? body.nota.trim() : "";
     if (!body.status && !nota) return NextResponse.json({ error: "Nenhuma alteração" }, { status: 400 });
 
-    const { data: existing, error: lookupError } = await db.from("dividas")
-      .select("*").eq("id", params.id).eq("credor_id", credorId).maybeSingle();
-    if (lookupError) throw lookupError;
-    if (!existing) return NextResponse.json({ error: "Dívida não encontrada" }, { status: 404 });
-
-    let updated = existing;
-    if (body.status) {
-      const result = await db.from("dividas").update({ status: body.status })
-        .eq("id", params.id).eq("credor_id", credorId).select().single();
-      if (result.error) throw result.error;
-      updated = result.data;
-    }
-    const events = [];
-    if (body.status) events.push(`Status alterado para "${body.status}"`);
-    if (nota) events.push(nota);
-    for (const descricao of events) {
-      const { error: logError } = await db.from("historico_acoes").insert({
-        divida_id: params.id, tipo: "atualizacao", descricao,
-        autor: auth.user!.email || auth.user!.id,
-      });
-      if (logError) {
-        console.error("[PATCH /api/dividas/[id]] audit log failed", logError);
-        return NextResponse.json({ error: "Alteração realizada, mas falhou o registro do histórico" }, { status: 500 });
-      }
+    // The database commits the status and its audit events together.
+    const { data: updated, error } = await db.rpc("update_debt_with_history", {
+      p_divida_id: params.id,
+      p_status: body.status ?? null,
+      p_nota: nota || null,
+    }).single();
+    if (error) {
+      if (error.code === "PT404") return NextResponse.json({ error: "Dívida não encontrada" }, { status: 404 });
+      if (error.code === "PT409") return NextResponse.json({ error: "Dívidas pagas não podem ter o status alterado por esta operação" }, { status: 409 });
+      if (error.code === "22023" || error.code === "22P02") return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+      if (error.code === "PGRST202") return NextResponse.json({ error: "Atualização temporariamente indisponível" }, { status: 503 });
+      throw error;
     }
     return NextResponse.json(updated);
   } catch (err) {
