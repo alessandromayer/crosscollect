@@ -1,7 +1,7 @@
-# Debt update regression test
+# Debt write security regression test
 
-Run against a disposable Supabase/PostgreSQL database with migrations `001` and
-`002` applied, using an administrative test connection:
+Run against a disposable Supabase/PostgreSQL database with all proposed migrations
+applied, using an administrative test connection:
 
 ```sh
 psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/security/debt-update.sql
@@ -10,14 +10,18 @@ psql "$TEST_DATABASE_URL" -v ON_ERROR_STOP=1 -f tests/security/debt-update.sql
 Never run against production. The script uses fictional tenants and a failure
 injection trigger inside a transaction, then rolls everything back. It checks:
 
-- Tenant A cannot read tenant B's debts, update them through the RPC, or add history.
-- A status update and note create both audit events.
-- Unverified payments and reopening paid debts are rejected by the RPC.
+- Both tenant A and tenant B can read only their own debts; cross-tenant RPC and history writes are denied.
+- A user without a linked company sees no debts; the anonymous role cannot read debts or execute the update RPC.
+- New debts have exactly one creation event. Direct status updates also produce an audit event.
+- The API RPC and direct table writes reject unverified payments and reopening paid debts.
+- Clients cannot change financial amounts, payment timestamps, or creditor ownership.
 - Notes can still be added to paid debts.
-- An audit insert failure rolls back the status and all events in the RPC.
-- The anonymous role cannot execute the RPC.
+- An audit failure rolls back debt creation, direct status updates, and RPC status/note changes.
 
-The RPC uses invoker permissions and requires the proposed history INSERT policy.
-The API returns 503 if the RPC is absent. Migration 002 is a reviewed proposal,
-not an automatically applied production change. These checks do not certify the
-live database, browser login/cookie behavior, or permissions on direct table writes.
+Functions and triggers use invoker permissions and retain RLS. Column grants limit
+clients to administrative status changes after creation. The privileged payment
+webhook remains a separate flow and has not been certified by these tests.
+
+The creation API relies on the database audit trigger. Apply the new migration
+before deploying this API version. Production rollout requires a separate review.
+These SQL checks do not certify browser login/cookies or HTTP authentication.
