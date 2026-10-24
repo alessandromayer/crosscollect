@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase";
 import { Eye, EyeOff, Globe2, Check } from "lucide-react";
 
 export default function CadastroPage() {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [form, setForm] = useState({
     nome: "",
     email: "",
@@ -26,8 +27,14 @@ export default function CadastroPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    router.push("/dashboard");
+    setError(""); setMessage("");
+    try {
+      const { data, error: authError } = await createClient().auth.signUp({ email: form.email, password: form.password, options: { data: { full_name: form.nome, company_name: form.empresa, country: form.pais } } });
+      if (authError) { setError(authError.message); return; }
+      if (!data.user) { setError("Não foi possível criar a conta."); return; }
+      setMessage("Cadastro recebido. Confirme seu e-mail, se solicitado. O acesso à empresa será ativado após a validação do piloto.");
+    } catch { setError("Erro ao criar conta. Tente novamente."); }
+    finally { setIsLoading(false); }
   }
 
   return (
@@ -42,19 +49,19 @@ export default function CadastroPage() {
 
         <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 p-8">
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900 mb-1">Criar conta gratuita</h2>
-            <p className="text-slate-500">Comece a recuperar seus ativos no Brasil hoje</p>
+            <h2 className="text-2xl font-bold text-slate-900 mb-1">Criar conta para o piloto</h2>
+            <p className="text-slate-500">Solicite acesso ao piloto CrossCollect</p>
           </div>
 
           {/* Benefits */}
           <div className="bg-blue-50 rounded-xl p-4 mb-6">
-            <p className="text-sm font-semibold text-blue-800 mb-2">Plano Starter inclui:</p>
+            <p className="text-sm font-semibold text-blue-800 mb-2">Como funciona o acesso:</p>
             <div className="space-y-1.5">
               {[
-                "Até 5 dívidas ativas",
-                "Assistente IA (50 mensagens/mês)",
-                "Régua de cobrança automatizada",
-                "Sem cartão de crédito necessário",
+                "Cadastro individual com e-mail e senha",
+                "Acesso à empresa após validação",
+                "Envios e cobranças indisponíveis no piloto",
+                "Sem cartão de crédito no cadastro",
               ].map((item) => (
                 <div key={item} className="flex items-center gap-2">
                   <Check className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
@@ -65,12 +72,16 @@ export default function CadastroPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+            {message && <p role="status" className="text-sm text-green-700">{message}</p>}
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label htmlFor="signup-name" className="block text-sm font-medium text-slate-700 mb-1.5">
                   Nome completo
                 </label>
                 <input
+                  id="signup-name"
+                  autoComplete="name"
                   type="text"
                   value={form.nome}
                   onChange={(e) => setForm({ ...form, nome: e.target.value })}
@@ -81,8 +92,10 @@ export default function CadastroPage() {
               </div>
 
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">E-mail</label>
+                <label htmlFor="signup-email" className="block text-sm font-medium text-slate-700 mb-1.5">E-mail</label>
                 <input
+                  id="signup-email"
+                  autoComplete="email"
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -93,10 +106,12 @@ export default function CadastroPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label htmlFor="signup-company" className="block text-sm font-medium text-slate-700 mb-1.5">
                   Empresa (opcional)
                 </label>
                 <input
+                  id="signup-company"
+                  autoComplete="organization"
                   type="text"
                   value={form.empresa}
                   onChange={(e) => setForm({ ...form, empresa: e.target.value })}
@@ -106,8 +121,10 @@ export default function CadastroPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">País</label>
+                <label htmlFor="signup-country" className="block text-sm font-medium text-slate-700 mb-1.5">País</label>
                 <select
+                  id="signup-country"
+                  autoComplete="country-name"
                   value={form.pais}
                   onChange={(e) => setForm({ ...form, pais: e.target.value })}
                   required
@@ -121,9 +138,11 @@ export default function CadastroPage() {
               </div>
 
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Senha</label>
+                <label htmlFor="signup-password" className="block text-sm font-medium text-slate-700 mb-1.5">Senha</label>
                 <div className="relative">
                   <input
+                  id="signup-password"
+                  autoComplete="new-password"
                     type={showPassword ? "text" : "password"}
                     value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -134,6 +153,8 @@ export default function CadastroPage() {
                   />
                   <button
                     type="button"
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                    aria-pressed={showPassword}
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   >
@@ -157,7 +178,7 @@ export default function CadastroPage() {
                   Criando conta...
                 </>
               ) : (
-                "Criar conta grátis"
+                "Criar conta"
               )}
             </button>
           </form>
