@@ -25,3 +25,30 @@ webhook remains a separate flow and has not been certified by these tests.
 The creation API relies on the database audit trigger. Apply the new migration
 before deploying this API version. Production rollout requires a separate review.
 These SQL checks do not certify browser login/cookies or HTTP authentication.
+
+## Authenticated HTTP sessions
+
+`authenticated-http.py` exercises password login against the isolated staging
+Auth service, serializes cookies in the installed auth-helpers format, starts the
+production Next.js build, checks API tenant isolation and repeats requests using
+the same session. It also checks unlinked-account denial, the Auth logout endpoint,
+and anonymous rejection after clearing cookies. This is not a browser interaction
+test and does not click the login/logout controls.
+
+Prepare disposable, confirmed `.invalid` users and their company/debt fixtures in
+staging, with an optional third user without a company. Store their credentials in
+an untracked JSON file following the format in the script's docstring. Provide the
+staging URL/anonymous key in the ignored `.env.local`, then run:
+
+```sh
+npm run build
+TEST_AUTH_FIXTURES=/absolute/path/to/temporary-fixtures.json python tests/security/authenticated-http.py
+```
+
+Delete fixture debts, companies, users and credentials after the check. No signup
+or email-delivery endpoint is used. The script refuses any other Supabase URL.
+
+`TEST_SKIP_PAGE_RENDER=1` skips authenticated dashboard rendering only when the
+local Edge runtime cannot access the remote Auth service. The script logs this
+skip explicitly; it is not evidence that browser cookies, refresh or logout UI
+work. Test the full browser flow on an accessible preview before releasing.
