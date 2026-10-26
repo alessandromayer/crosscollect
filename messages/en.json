@@ -267,18 +267,20 @@
     "newDebt": "New Debt",
     "metrics": {
       "openBalance": "Open Balance",
-      "openBalanceSub": "≈ {value} in BRL",
+      "openBalanceSub": "Conversions recorded when debts were added",
       "recoveredMonth": "Recovered this month",
       "successRate": "Success Rate",
-      "successRateSub": "Last 90 days",
+      "successRateSub": "Paid debts / total portfolio",
       "activeCases": "Active Cases",
-      "activeCasesSub": "{count} overdue"
+      "activeCasesSub": "{count} overdue",
+      "storedConversion": "Conversions recorded when debts were added"
     },
     "chart": {
       "title": "Monthly Recovery",
-      "sub": "Last 6 months (USD)",
+      "sub": "Stored BRL conversions · months in UTC",
       "last6": "Last 6 months",
-      "lastYear": "Last year"
+      "lastYear": "Last year",
+      "period": "Chart period"
     },
     "portfolio": {
       "title": "Portfolio Status",
@@ -289,7 +291,7 @@
     },
     "recentDebts": {
       "title": "Recent Debts",
-      "sub": "Added in the last 30 days",
+      "sub": "Last 5 debts added",
       "viewAll": "View all"
     },
     "communications": {
@@ -300,12 +302,14 @@
       "opened": "opened",
       "replies": "replies",
       "openRate": "open rate",
-      "replyRate": "reply rate"
+      "replyRate": "reply rate",
+      "title": "Communications",
+      "disabled": "Email and WhatsApp sending are disabled in this pilot."
     },
     "alert": {
       "title": "{count} overdue debts need attention",
-      "sub": "Activate the AI assistant to get personalized collection strategy suggestions.",
-      "cta": "Open Assistant"
+      "sub": "Review overdue debts and record the next steps for each case.",
+      "cta": "View debts"
     },
     "overview": "Your company overview"
   },

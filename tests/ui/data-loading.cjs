@@ -20,7 +20,7 @@ function load(relative) {
   }).outputText;
   function resolve(name) {
     if (name === 'next/link') return ({ href, children, ...props }) => React.createElement('a', { href, ...props }, children);
-    if (name === 'next-intl') return { useTranslations: (namespace) => (key, args = {}) => {
+    if (name === 'next-intl') return { useLocale: () => 'pt', useTranslations: (namespace) => (key, args = {}) => {
       let value = [namespace, ...key.split('.')].reduce((obj, part) => obj?.[part], messages) ?? key;
       for (const [name, replacement] of Object.entries(args)) value = value.replaceAll(`{${name}}`, String(replacement));
       return value;
@@ -38,8 +38,9 @@ function load(relative) {
 }
 
 const metrics = {
-  total_em_aberto: 0, total_em_aberto_brl: 0, recuperado_mes: 0, recuperado_mes_brl: 0,
-  taxa_sucesso: 0, casos_ativos: 0, casos_vencidos: 0, variacao_mensal: 0,
+  total_em_aberto_brl: 0, recuperado_mes_brl: 0,
+  taxa_sucesso: 0, casos_ativos: 0, casos_vencidos: 0,
+  monthly_recovery: [{ month: "2026-01", total_brl: 0 }],
   portfolio: { pendente: 0, em_negociacao: 0, vencido: 0, pago: 0, total: 0 },
 };
 const text = (view) => JSON.stringify(view.toJSON());
@@ -84,5 +85,23 @@ async function checkPage(file, validPayload) {
   try {
     await checkPage('app/(dashboard)/dashboard/page.tsx', { metrics, recentDebts: [] });
     await checkPage('app/(dashboard)/dividas/page.tsx', []);
+    const monthly = Array.from({ length: 12 }, (_, i) => ({
+      month: new Date(Date.UTC(2025, 10 + i, 1)).toISOString().slice(0, 7), total_brl: i + 1,
+    }));
+    const actual = { ...metrics, total_em_aberto_brl: 1125, recuperado_mes_brl: 600.5, monthly_recovery: monthly };
+    global.fetch = async () => ({ ok: true, status: 200, json: async () => ({ metrics: actual, recentDebts: [] }) });
+    const Dashboard = load('app/(dashboard)/dashboard/page.tsx').default;
+    let view;
+    await act(async () => { view = create(React.createElement(Dashboard)); });
+    const firstLabel = new Intl.DateTimeFormat('pt', { month: 'short', year: '2-digit', timeZone: 'UTC' })
+      .format(new Date(monthly[0].month + '-01T00:00:00Z'));
+    assert(!text(view).includes(firstLabel), 'Default chart should show only the last six months');
+    await act(async () => view.root.findByType('select').props.onChange({ target: { value: '12' } }));
+    assert(text(view).includes(firstLabel), 'Twelve-month selection must show the earlier payment month');
+    assert(text(view).includes(load('lib/utils.ts').formatCurrency(600.5)), 'Recovery card must show its BRL amount');
+    assert(!text(view).includes('NaN'));
+    assert(text(view).includes(messages.dashboard.communications.disabled));
+    await act(async () => view.unmount());
+    console.log('PASS dashboard stored BRL values, real 6/12-month selection and disabled communications');
   } finally { global.fetch = originalFetch; }
 })().catch((error) => { console.error(error); process.exitCode = 1; });

@@ -11,11 +11,8 @@ import {
   ArrowRight,
   Plus,
   Clock,
-  Mail,
-  MessageCircle,
-  BarChart3,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { formatCurrency, formatDate, getStatusLabel } from "@/lib/utils";
 import { CotacoesPanel } from "@/components/cotacoes-panel";
@@ -106,6 +103,8 @@ interface RecentDebt {
 
 export default function DashboardPage() {
   const t = useTranslations("dashboard");
+  const locale = useLocale();
+  const [chartMonths, setChartMonths] = useState(6);
   const { cotacoes } = useCotacoes();
 
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
@@ -127,7 +126,7 @@ export default function DashboardPage() {
           throw new Error("Metrics request failed");
         }
         const data = await response.json();
-        if (!data.metrics || !Array.isArray(data.recentDebts)) throw new Error("Invalid metrics response");
+        if (!data.metrics || !Array.isArray(data.metrics.monthly_recovery) || !Array.isArray(data.recentDebts)) throw new Error("Invalid metrics response");
         if (!controller.signal.aborted) {
           setMetrics(data.metrics);
           setRecentDebts(data.recentDebts);
@@ -156,15 +155,12 @@ export default function DashboardPage() {
       ]
     : undefined;
 
-  const chartData = [
-    { mes: "Oct", valor: 0 },
-    { mes: "Nov", valor: 0 },
-    { mes: "Dec", valor: 0 },
-    { mes: "Jan", valor: 0 },
-    { mes: "Feb", valor: 0 },
-    { mes: "Mar", valor: m.recuperado_mes_brl },
-  ];
-  const maxVal = Math.max(...chartData.map((d) => d.valor), 1);
+  const chartData = m.monthly_recovery.slice(-chartMonths).map((item) => ({
+    ...item,
+    label: new Intl.DateTimeFormat(locale, { month: "short", year: "2-digit", timeZone: "UTC" })
+      .format(new Date(item.month + "-01T00:00:00Z")),
+  }));
+  const maxVal = Math.max(...chartData.map((item) => item.total_brl), 1);
 
   return (
     <div className="p-8">
@@ -190,7 +186,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-4 gap-5 mb-8">
         <MetricCard
           title={t("metrics.openBalance")}
-          value={formatCurrency(m.total_em_aberto_brl)}
+          value={`≈ ${formatCurrency(m.total_em_aberto_brl)}`}
           subtitle={t("metrics.openBalanceSub", { value: formatCurrency(m.total_em_aberto_brl) })}
           icon={DollarSign}
           color="blue"
@@ -198,8 +194,8 @@ export default function DashboardPage() {
         />
         <MetricCard
           title={t("metrics.recoveredMonth")}
-          value={formatCurrency(m.recuperado_mes, "USD")}
-          subtitle={`≈ ${formatCurrency(m.recuperado_mes_brl)}`}
+          value={`≈ ${formatCurrency(m.recuperado_mes_brl)}`}
+          subtitle={t("metrics.storedConversion")}
           icon={TrendingUp}
           color="green"
         />
@@ -227,24 +223,25 @@ export default function DashboardPage() {
               <h3 className="font-semibold text-slate-900">{t("chart.title")}</h3>
               <p className="text-slate-400 text-sm">{t("chart.sub")}</p>
             </div>
-            <select className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option>{t("chart.last6")}</option>
-              <option>{t("chart.lastYear")}</option>
+            <select value={chartMonths} onChange={(event) => setChartMonths(Number(event.target.value))}
+              aria-label={t("chart.period")} className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value={6}>{t("chart.last6")}</option>
+              <option value={12}>{t("chart.lastYear")}</option>
             </select>
           </div>
           <div className="flex items-end gap-3 h-40">
             {chartData.map((d) => (
-              <div key={d.mes} className="flex-1 flex flex-col items-center gap-1.5">
+              <div key={d.month} className="flex-1 flex flex-col items-center gap-1.5">
                 <span className="text-xs text-slate-500 font-medium">
-                  ${(d.valor / 1000).toFixed(0)}k
+                  {formatCurrency(d.total_brl)}
                 </span>
                 <div className="w-full flex items-end justify-center">
                   <div
                     className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-lg transition-all hover:from-blue-700 hover:to-blue-500 cursor-pointer"
-                    style={{ height: `${(d.valor / maxVal) * 120}px`, minHeight: "8px" }}
+                    style={{ height: `${(d.total_brl / maxVal) * 120}px`, minHeight: d.total_brl > 0 ? "2px" : "0px" }}
                   />
                 </div>
-                <span className="text-xs text-slate-400">{d.mes}</span>
+                <span className="text-xs text-slate-400">{d.label}</span>
               </div>
             ))}
           </div>
@@ -355,100 +352,13 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Communications */}
-      <div className="mt-6 grid grid-cols-3 gap-5">
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center">
-              <Mail className="w-4 h-4 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-900">{t("communications.emailsSent")}</p>
-              <p className="text-xs text-slate-400">{t("communications.thisWeek")}</p>
-            </div>
-          </div>
-          <p className="text-3xl font-bold text-slate-900 mb-1">{0}</p>
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-xs text-slate-500">{0} {t("communications.opened")}</span>
-            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
-              {0}% {t("communications.openRate")}
-            </span>
-          </div>
-          <div className="flex items-end gap-1 h-10">
-            {["S","T","Q","Q","S"].map((d, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center gap-0.5">
-                <div className="w-full bg-blue-100 rounded-sm" style={{ height: "3px" }} />
-                <span className="text-[9px] text-slate-400">{d}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center">
-              <MessageCircle className="w-4 h-4 text-emerald-600" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-900">{t("communications.whatsappSent")}</p>
-              <p className="text-xs text-slate-400">{t("communications.thisWeek")}</p>
-            </div>
-          </div>
-          <p className="text-3xl font-bold text-slate-900 mb-1">{0}</p>
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-xs text-slate-500">{0} {t("communications.replies")}</span>
-            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">
-              {0}% {t("communications.replyRate")}
-            </span>
-          </div>
-          <div className="flex items-end gap-1 h-10">
-            {["S","T","Q","Q","S"].map((d, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center gap-0.5">
-                <div className="w-full bg-emerald-100 rounded-sm" style={{ height: "3px" }} />
-                <span className="text-[9px] text-slate-400">{d}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 bg-violet-50 rounded-xl flex items-center justify-center">
-              <BarChart3 className="w-4 h-4 text-violet-600" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-900">{t("communications.totalComms")}</p>
-              <p className="text-xs text-slate-400">{t("communications.thisWeek")}</p>
-            </div>
-          </div>
-          <p className="text-3xl font-bold text-slate-900 mb-4">
-            {0 + 0}
-          </p>
-          <div className="space-y-2">
-            {[
-              { label: "Email", count: 0, color: "bg-blue-500" },
-              { label: "WhatsApp", count: 0, color: "bg-emerald-500" },
-            ].map((item) => {
-              const total = 0 + 0;
-              const pct = Math.round((item.count / total) * 100);
-              return (
-                <div key={item.label}>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-slate-500">{item.label}</span>
-                    <span className="font-medium text-slate-700">{item.count} ({pct}%)</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5">
-                    <div className={`${item.color} h-1.5 rounded-full`} style={{ width: `${pct}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <section className="mt-6 rounded-2xl border border-slate-100 bg-white p-5">
+        <h2 className="font-semibold text-slate-900">{t("communications.title")}</h2>
+        <p className="mt-2 text-sm text-slate-500">{t("communications.disabled")}</p>
+      </section>
 
       {/* Alert */}
-      <div className="mt-6 bg-amber-50 border border-amber-100 rounded-2xl p-5 flex items-start gap-4">
+      {m.casos_vencidos > 0 && <div className="mt-6 bg-amber-50 border border-amber-100 rounded-2xl p-5 flex items-start gap-4">
         <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
         <div>
           <p className="font-semibold text-amber-900 text-sm">
@@ -457,12 +367,12 @@ export default function DashboardPage() {
           <p className="text-amber-700 text-sm mt-0.5">{t("alert.sub")}</p>
         </div>
         <Link
-          href="/assistente"
+          href="/dividas"
           className="ml-auto flex-shrink-0 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition-all"
         >
           {t("alert.cta")}
         </Link>
-      </div>
+      </div>}
     </div>
   );
 }
