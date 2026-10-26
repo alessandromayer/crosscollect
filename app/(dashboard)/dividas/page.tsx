@@ -17,6 +17,7 @@ import {
 import { formatCurrency, formatDate, getStatusLabel } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { useCotacoes, getBid } from "@/hooks/use-cotacoes";
+import { DataLoadState } from "@/components/data-load-state";
 import type { Debt } from "@/types";
 
 const statusBadgeClass: Record<string, string> = {
@@ -52,13 +53,35 @@ export default function DividasPage() {
     { label: t("filters.paid"), value: "pago" },
   ];
 
+  const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  const [attempt, setAttempt] = useState(0);
+
   useEffect(() => {
-    fetch("/api/dividas")
-      .then((r) => r.json())
-      .then((data) => setDebts(Array.isArray(data) ? data : []))
-      .catch(() => setDebts([]))
-      .finally(() => setLoading(false));
-  }, []);
+    const controller = new AbortController();
+    setLoading(true);
+    setErrorStatus(null);
+    fetch("/api/dividas", { signal: controller.signal })
+      .then(async (response) => {
+        if (controller.signal.aborted) return;
+        if (!response.ok) {
+          setErrorStatus(response.status);
+          throw new Error("Debt request failed");
+        }
+        const data = await response.json();
+        if (!Array.isArray(data)) throw new Error("Invalid debt response");
+        if (!controller.signal.aborted) setDebts(data);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setErrorStatus((status) => status ?? 0);
+      })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [attempt]);
+
+  if (loading || errorStatus !== null) {
+    return <DataLoadState loading={loading} status={errorStatus ?? 0}
+      onRetry={() => setAttempt((value) => value + 1)} />;
+  }
 
   const filtered = debts.filter((d) => {
     const q = search.toLowerCase();

@@ -41,12 +41,14 @@ export async function GET() {
     const taxa_sucesso = all.length > 0 ? Math.round((pagos_total / all.length) * 1000) / 10 : 0;
 
     // Recent debts (last 5)
-    const { data: recent } = await db
+    const { data: recent, error: recentError } = await db
       .from("dividas")
       .select("id, devedor_nome, devedor_doc, descricao, valor, moeda, valor_brl, data_vencimento, status")
       .eq("credor_id", credorId)
       .order("criado_em", { ascending: false })
       .limit(5);
+
+    if (recentError) throw recentError;
 
     return NextResponse.json({
       metrics: {

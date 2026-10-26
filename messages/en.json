@@ -306,7 +306,8 @@
       "title": "{count} overdue debts need attention",
       "sub": "Activate the AI assistant to get personalized collection strategy suggestions.",
       "cta": "Open Assistant"
-    }
+    },
+    "overview": "Your company overview"
   },
   "debts": {
     "title": "Debts",
@@ -891,5 +892,16 @@
       "rights": "All rights reserved.",
       "statusLabel": "MVP / Pilot Stage — building in the open"
     }
+  },
+  "dataState": {
+    "loading": "Loading data…",
+    "sessionExpired": "Sign in to your account again",
+    "signInAgain": "Your session expired or is unavailable. Sign in to continue.",
+    "activationPending": "Company access pending validation",
+    "activationDescription": "Your account is not linked to a company yet. Data access will be enabled after pilot validation.",
+    "errorTitle": "Unable to load data",
+    "errorDescription": "The data is currently unavailable. Please try again.",
+    "login": "Go to sign in",
+    "retry": "Try again"
   }
 }

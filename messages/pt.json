@@ -306,7 +306,8 @@
       "title": "{count} dívidas vencidas precisam de atenção",
       "sub": "Ative o assistente IA para receber sugestões de estratégia de cobrança personalizadas.",
       "cta": "Abrir Assistente"
-    }
+    },
+    "overview": "Resumo da sua empresa"
   },
   "debts": {
     "title": "Dívidas",
@@ -891,5 +892,16 @@
       "rights": "Todos os direitos reservados.",
       "statusLabel": "Fase de MVP / Piloto — construindo em público"
     }
+  },
+  "dataState": {
+    "loading": "Carregando dados…",
+    "sessionExpired": "Entre novamente na sua conta",
+    "signInAgain": "Sua sessão expirou ou não está disponível. Faça login para continuar.",
+    "activationPending": "Acesso à empresa em validação",
+    "activationDescription": "Sua conta ainda não está vinculada a uma empresa. O acesso aos dados será liberado após a validação do piloto.",
+    "errorTitle": "Não foi possível carregar os dados",
+    "errorDescription": "Os dados não estão disponíveis neste momento. Tente novamente.",
+    "login": "Ir para o login",
+    "retry": "Tentar novamente"
   }
 }

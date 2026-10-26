@@ -20,6 +20,7 @@ import { useState, useEffect } from "react";
 import { formatCurrency, formatDate, getStatusLabel } from "@/lib/utils";
 import { CotacoesPanel } from "@/components/cotacoes-panel";
 import { useCotacoes, getBid } from "@/hooks/use-cotacoes";
+import { DataLoadState } from "@/components/data-load-state";
 import type { DashboardMetrics } from "@/types";
 
 const statusBadgeClass: Record<string, string> = {
@@ -110,22 +111,41 @@ export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [recentDebts, setRecentDebts] = useState<RecentDebt[]>([]);
 
-  useEffect(() => {
-    fetch("/api/dashboard/metrics")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.metrics) setMetrics(data.metrics);
-        if (data.recentDebts) setRecentDebts(data.recentDebts);
-      })
-      .catch(() => {});
-  }, []);
+  const [loading, setLoading] = useState(true);
+  const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
-  const m = metrics ?? {
-    total_em_aberto: 0, total_em_aberto_brl: 0,
-    recuperado_mes: 0, recuperado_mes_brl: 0,
-    taxa_sucesso: 0, casos_ativos: 0, casos_vencidos: 0, variacao_mensal: 0,
-    portfolio: { pendente: 0, em_negociacao: 0, vencido: 0, pago: 0, total: 0 },
-  };
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setErrorStatus(null);
+    fetch("/api/dashboard/metrics", { signal: controller.signal })
+      .then(async (response) => {
+        if (controller.signal.aborted) return;
+        if (!response.ok) {
+          setErrorStatus(response.status);
+          throw new Error("Metrics request failed");
+        }
+        const data = await response.json();
+        if (!data.metrics || !Array.isArray(data.recentDebts)) throw new Error("Invalid metrics response");
+        if (!controller.signal.aborted) {
+          setMetrics(data.metrics);
+          setRecentDebts(data.recentDebts);
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setErrorStatus((status) => status ?? 0);
+      })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [attempt]);
+
+  if (loading || errorStatus !== null || !metrics) {
+    return <DataLoadState loading={loading} status={errorStatus ?? 0}
+      onRetry={() => setAttempt((value) => value + 1)} />;
+  }
+
+  const m = metrics;
 
   // Live-rate conversions of the BRL open balance
   const openBalanceConversions = cotacoes
@@ -152,7 +172,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
-          <p className="text-slate-500 mt-0.5">{t("subtitle", { name: "João" })}</p>
+          <p className="text-slate-500 mt-0.5">{t("overview")}</p>
         </div>
         <Link
           href="/dividas/nova"
@@ -172,8 +192,6 @@ export default function DashboardPage() {
           title={t("metrics.openBalance")}
           value={formatCurrency(m.total_em_aberto_brl)}
           subtitle={t("metrics.openBalanceSub", { value: formatCurrency(m.total_em_aberto_brl) })}
-          trend="up"
-          trendValue="+8.2%"
           icon={DollarSign}
           color="blue"
           conversions={openBalanceConversions}
@@ -182,8 +200,6 @@ export default function DashboardPage() {
           title={t("metrics.recoveredMonth")}
           value={formatCurrency(m.recuperado_mes, "USD")}
           subtitle={`≈ ${formatCurrency(m.recuperado_mes_brl)}`}
-          trend="up"
-          trendValue={`+${m.variacao_mensal}%`}
           icon={TrendingUp}
           color="green"
         />
@@ -191,8 +207,6 @@ export default function DashboardPage() {
           title={t("metrics.successRate")}
           value={`${m.taxa_sucesso}%`}
           subtitle={t("metrics.successRateSub")}
-          trend="up"
-          trendValue="+3.1%"
           icon={CheckCircle2}
           color="purple"
         />
@@ -361,8 +375,8 @@ export default function DashboardPage() {
             </span>
           </div>
           <div className="flex items-end gap-1 h-10">
-            {["S","T","Q","Q","S"].map((d) => (
-              <div key={d} className="flex-1 flex flex-col items-center gap-0.5">
+            {["S","T","Q","Q","S"].map((d, index) => (
+              <div key={index} className="flex-1 flex flex-col items-center gap-0.5">
                 <div className="w-full bg-blue-100 rounded-sm" style={{ height: "3px" }} />
                 <span className="text-[9px] text-slate-400">{d}</span>
               </div>
@@ -388,8 +402,8 @@ export default function DashboardPage() {
             </span>
           </div>
           <div className="flex items-end gap-1 h-10">
-            {["S","T","Q","Q","S"].map((d) => (
-              <div key={d} className="flex-1 flex flex-col items-center gap-0.5">
+            {["S","T","Q","Q","S"].map((d, index) => (
+              <div key={index} className="flex-1 flex flex-col items-center gap-0.5">
                 <div className="w-full bg-emerald-100 rounded-sm" style={{ height: "3px" }} />
                 <span className="text-[9px] text-slate-400">{d}</span>
               </div>
