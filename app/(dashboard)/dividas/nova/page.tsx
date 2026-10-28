@@ -124,100 +124,43 @@ export default function NovaDividaPage() {
     );
   }
 
+  const [submitError, setSubmitError] = useState("");
+
   async function handleSubmit() {
+    if (isSubmitting) return;
+    setSubmitError("");
+    const valorNum = Number(divida.valor);
+    if (!devedor.nome.trim() || !devedor.cpf_cnpj.trim() || !divida.descricao.trim() || !Number.isFinite(valorNum) || valorNum <= 0) {
+      setSubmitError("Preencha nome, CPF/CNPJ, descrição e valor válido.");
+      return;
+    }
     setIsSubmitting(true);
     try {
-      const valorNum = parseFloat(divida.valor) || 0;
-      const dataVencFormatted = divida.dataVencimento || new Date().toISOString().split("T")[0];
-
-      // 0. Save debt to Supabase first — get real ID
-      let dividaId = `d_${Date.now()}`; // fallback
-      try {
-        const saveRes = await fetch("/api/dividas", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            devedor_nome: devedor.nome || "Devedor",
-            devedor_doc: devedor.cpf_cnpj || "00000000000",
-            devedor_email: devedor.email || null,
-            devedor_tel: devedor.telefone || null,
-            devedor_cidade: devedor.cidade || null,
-            devedor_estado: devedor.estado || null,
-            devedor_tipo: devedor.tipo,
-            descricao: divida.descricao || "Pendência financeira",
-            valor: valorNum,
-            moeda: divida.moeda,
-            data_vencimento: dataVencFormatted,
-            observacoes: divida.observacoes || null,
-            regime_cobranca: cobrancaSteps,
-          }),
-        });
-        if (saveRes.ok) {
-          const saved = await saveRes.json();
-          if (saved.id) dividaId = saved.id;
-        }
-      } catch (e) {
-        console.error("Erro ao salvar dívida no banco:", e);
-      }
-
-      // Run collection rule + Asaas charge creation in parallel
-      const [regraRes, asaasRes] = await Promise.allSettled([
-        fetch("/api/cobranca/iniciar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            divida: {
-              id: dividaId,
-              descricao: divida.descricao || "Pendência financeira",
-              valor: divida.valor || "0",
-              moeda: divida.moeda,
-              dataVencimento: divida.dataVencimento ? formatDate(divida.dataVencimento) : "—",
-              linkPagamento: `${window.location.origin}/pagar/${dividaId}`,
-            },
-            devedor: {
-              nome: devedor.nome || "Devedor",
-              email: devedor.email || "",
-              telefone: devedor.telefone || "",
-            },
-            nomeCredor: "CrossCollect",
-            baseUrl: window.location.origin,
-          }),
+      const result = await fetch("/api/dividas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          devedor_nome: devedor.nome.trim(), devedor_doc: devedor.cpf_cnpj.trim(),
+          devedor_email: devedor.email || null, devedor_tel: devedor.telefone || null,
+          devedor_cidade: devedor.cidade || null, devedor_estado: devedor.estado || null,
+          devedor_tipo: devedor.tipo, descricao: divida.descricao.trim(), valor: valorNum,
+          moeda: divida.moeda, data_vencimento: divida.dataVencimento || new Date().toISOString().split("T")[0],
+          observacoes: divida.observacoes || null, regime_cobranca: cobrancaSteps,
         }),
-        fetch("/api/asaas/criar-cobranca", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            devedor: {
-              nome: devedor.nome || "Devedor",
-              cpf_cnpj: devedor.cpf_cnpj || "00000000000",
-              email: devedor.email || "",
-            },
-            valor: valorNum,
-            descricao: divida.descricao || "Pendência financeira",
-            dataVencimento: dataVencFormatted,
-            divida_id: dividaId,
-          }),
-        }),
-      ]);
-
-      // Handle collection rule result
-      if (regraRes.status === "fulfilled" && regraRes.value.ok) {
-        const data = await regraRes.value.json();
-        setRegraStatus(data.resumo ? { ...data.resumo, acoes: data.acoes } : null);
+      });
+      if (!result.ok) {
+        const detail = await result.json().catch(() => null);
+        throw new Error(detail?.error || "Falha ao cadastrar dívida.");
       }
-
-      // Handle Asaas result
-      if (asaasRes.status === "fulfilled" && asaasRes.value.ok) {
-        const data = await asaasRes.value.json();
-        setAsaasData({ boleto: data.boleto, pix: data.pix });
-      }
-
-      // Stay on page to show payment links, auto-redirect after 6s
-      await new Promise((r) => setTimeout(r, 6000));
-    } catch (err) {
-      console.error("Erro ao cadastrar dívida:", err);
+      const saved = await result.json();
+      if (typeof saved?.id !== "string" || !saved.id) throw new Error("Cadastro não confirmado pelo servidor.");
+      // Pilot safety: do not initiate Asaas charges or messages automatically.
+      router.push("/dividas");
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Falha no cadastro.");
+    } finally {
+      setIsSubmitting(false);
     }
-    router.push("/dividas");
   }
 
   const estados = [
@@ -241,6 +184,7 @@ export default function NovaDividaPage() {
         </div>
       </div>
 
+      {submitError && <p role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{submitError}</p>}
       {/* Progress steps */}
       <div className="flex items-center mb-10">
         {steps.map((s, idx) => (

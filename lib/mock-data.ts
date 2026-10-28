@@ -1,15 +1,4 @@
-import type { Debt, DashboardMetrics, TimelineEvent, ComunicacaoMetrics } from "@/types";
-
-export const mockMetrics: DashboardMetrics = {
-  total_em_aberto: 847500,
-  total_em_aberto_brl: 4237500,
-  recuperado_mes: 125000,
-  recuperado_mes_brl: 625000,
-  taxa_sucesso: 68.4,
-  casos_ativos: 43,
-  casos_vencidos: 12,
-  variacao_mensal: 12.5,
-};
+import type { Debt, TimelineEvent, ComunicacaoMetrics } from "@/types";
 
 export const mockComunicacaoMetrics: ComunicacaoMetrics = {
   emails_enviados_semana: 34,

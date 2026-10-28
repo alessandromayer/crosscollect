@@ -1,14 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-admin";
+import { requireAuth } from "@/lib/require-auth";
+import { getOwnCredorId } from "@/lib/tenant";
+import { createServerClient } from "@/lib/supabase-server";
 
 // GET /api/dividas/[id]/pagamento — retrieve saved Asaas payment data
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
   try {
-    const db = getSupabaseAdmin();
+    const { id } = await params;
+    const credorId = await getOwnCredorId(auth.user!.id);
+    if (!credorId) return NextResponse.json({ error: "Empresa não vinculada" }, { status: 403 });
+    const { data: debt } = await createServerClient().from("dividas").select("id").eq("id", id).eq("credor_id", credorId).maybeSingle();
+    if (!debt) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
+    const db = createServerClient();
     const { data, error } = await db
       .from("pagamentos_asaas")
       .select("*")
-      .eq("divida_id", params.id)
+      .eq("divida_id", id)
       .order("criado_em", { ascending: false })
       .limit(1)
       .single();

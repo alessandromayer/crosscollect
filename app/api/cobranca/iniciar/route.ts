@@ -1,3 +1,5 @@
+import { requireAuth } from "@/lib/require-auth";
+import { NextResponse as SecurityResponse } from "next/server";
 import { NextRequest, NextResponse } from "next/server";
 import type { SendEmailPayload } from "@/app/api/emails/send/route";
 import type { SendWhatsAppPayload } from "@/app/api/whatsapp/send/route";
@@ -65,6 +67,9 @@ async function enviarWhatsApp(
 }
 
 export async function POST(request: NextRequest) {
+  const auth = await requireAuth();
+  if (auth.error) return auth.error;
+  return SecurityResponse.json({ error: "Integração temporariamente desativada até a validação de permissões e modo de testes." }, { status: 503 });
   try {
     const body: IniciarCobrancaPayload = await request.json();
     const { divida, devedor, nomeCredor, baseUrl } = body;

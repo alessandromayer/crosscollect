@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase";
 import { useState, useEffect } from "react";
 import {
   Globe2,
@@ -19,7 +20,27 @@ import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { LanguageToggle } from "@/components/language-toggle";
 
-export function Sidebar() {
+export function Sidebar({ user }: { user: { email: string; name: string } }) {
+  const router = useRouter();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState("");
+  const displayName = user.name.trim() || user.email || "Minha conta";
+  const initials = displayName.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
+
+  async function handleSignOut() {
+    setIsSigningOut(true);
+    setSignOutError("");
+    try {
+      const { error } = await createClient().auth.signOut({ scope: "local" });
+      if (error) throw error;
+      router.replace("/login");
+      router.refresh();
+    } catch {
+      setSignOutError("Não foi possível sair. Tente novamente.");
+      setIsSigningOut(false);
+    }
+  }
+
   const pathname = usePathname();
   const t = useTranslations("nav");
   const [debtCount, setDebtCount] = useState<number>(0);
@@ -125,16 +146,19 @@ export function Sidebar() {
           <LanguageToggle variant="dark" />
         </div>
 
+        {signOutError && <p role="alert" className="px-3 text-xs text-red-400">{signOutError}</p>}
         {/* User */}
         <div className="flex items-center gap-3 px-3 py-2.5 mt-1">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-violet-600 rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-xs font-bold">JS</span>
+            <span className="text-white text-xs font-bold">{initials}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-slate-200 text-sm font-medium truncate">João Silva</p>
-            <p className="text-slate-500 text-xs truncate">joao@empresa.com</p>
+            <p className="text-slate-200 text-sm font-medium truncate">{displayName}</p>
+            <p className="text-slate-500 text-xs truncate">{user.email}</p>
           </div>
-          <button className="text-slate-500 hover:text-slate-300 transition-colors" title={t("logout")}>
+          <button type="button" onClick={handleSignOut} disabled={isSigningOut}
+            className="text-slate-500 hover:text-slate-300 transition-colors disabled:opacity-50"
+            title={t("logout")} aria-label={t("logout")}>
             <LogOut style={{ width: "15px", height: "15px" }} />
           </button>
         </div>

@@ -267,18 +267,20 @@
     "newDebt": "Nova Dívida",
     "metrics": {
       "openBalance": "Total em Aberto",
-      "openBalanceSub": "≈ {value} em BRL",
+      "openBalanceSub": "Conversões registradas no cadastro",
       "recoveredMonth": "Recuperado este mês",
       "successRate": "Taxa de Sucesso",
-      "successRateSub": "Últimos 90 dias",
+      "successRateSub": "Dívidas pagas / total da carteira",
       "activeCases": "Casos Ativos",
-      "activeCasesSub": "{count} vencidos"
+      "activeCasesSub": "{count} vencidos",
+      "storedConversion": "Conversões registradas no cadastro"
     },
     "chart": {
       "title": "Recuperação Mensal",
-      "sub": "Últimos 6 meses (USD)",
+      "sub": "Conversões cadastradas em BRL · meses em UTC",
       "last6": "Últimos 6 meses",
-      "lastYear": "Último ano"
+      "lastYear": "Último ano",
+      "period": "Período do gráfico"
     },
     "portfolio": {
       "title": "Status da Carteira",
@@ -289,7 +291,7 @@
     },
     "recentDebts": {
       "title": "Dívidas Recentes",
-      "sub": "Adicionadas nos últimos 30 dias",
+      "sub": "Últimas 5 dívidas cadastradas",
       "viewAll": "Ver todas"
     },
     "communications": {
@@ -300,13 +302,16 @@
       "opened": "abertos",
       "replies": "respostas",
       "openRate": "abertura",
-      "replyRate": "resposta"
+      "replyRate": "resposta",
+      "title": "Comunicações",
+      "disabled": "Envios por e-mail e WhatsApp estão desativados neste piloto."
     },
     "alert": {
       "title": "{count} dívidas vencidas precisam de atenção",
-      "sub": "Ative o assistente IA para receber sugestões de estratégia de cobrança personalizadas.",
-      "cta": "Abrir Assistente"
-    }
+      "sub": "Revise as dívidas vencidas e registre os próximos passos de cada caso.",
+      "cta": "Ver dívidas"
+    },
+    "overview": "Resumo da sua empresa"
   },
   "debts": {
     "title": "Dívidas",
@@ -891,5 +896,16 @@
       "rights": "Todos os direitos reservados.",
       "statusLabel": "Fase de MVP / Piloto — construindo em público"
     }
+  },
+  "dataState": {
+    "loading": "Carregando dados…",
+    "sessionExpired": "Entre novamente na sua conta",
+    "signInAgain": "Sua sessão expirou ou não está disponível. Faça login para continuar.",
+    "activationPending": "Acesso à empresa em validação",
+    "activationDescription": "Sua conta ainda não está vinculada a uma empresa. O acesso aos dados será liberado após a validação do piloto.",
+    "errorTitle": "Não foi possível carregar os dados",
+    "errorDescription": "Os dados não estão disponíveis neste momento. Tente novamente.",
+    "login": "Ir para o login",
+    "retry": "Tentar novamente"
   }
 }

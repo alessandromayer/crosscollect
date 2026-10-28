@@ -68,14 +68,12 @@ export interface TimelineEvent {
 }
 
 export interface DashboardMetrics {
-  total_em_aberto: number;
   total_em_aberto_brl: number;
-  recuperado_mes: number;
   recuperado_mes_brl: number;
+  monthly_recovery: { month: string; total_brl: number }[];
   taxa_sucesso: number;
   casos_ativos: number;
   casos_vencidos: number;
-  variacao_mensal: number;
   portfolio?: {
     pendente: number;
     em_negociacao: number;
