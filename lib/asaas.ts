@@ -1,12 +1,19 @@
-const ASAAS_BASE_URL = "https://www.asaas.com/api/v3";
+// Production transport remains unavailable until payment reconciliation is validated.
+const ASAAS_SANDBOX_URL = "https://api-sandbox.asaas.com/v3";
+const REQUEST_TIMEOUT_MS = 8_000;
 
 function asaasHeaders() {
-  // Strip surrounding quotes and leading backslash that can come from dotenv-expand
-  const raw = process.env.ASAAS_API_KEY ?? "";
-  const key = raw.replace(/^\\/, "").replace(/^['"]|['"]$/g, "").trim();
-  if (!key) throw new Error("ASAAS_API_KEY não configurada");
+  if (process.env.ASAAS_ENVIRONMENT !== "sandbox") {
+    throw new Error("Asaas disponível apenas com ASAAS_ENVIRONMENT=sandbox");
+  }
+  // Use a separate secret so an existing production key cannot be used by default.
+  const key = process.env.ASAAS_SANDBOX_API_KEY;
+  if (!key || key !== key.trim() || /[\r\n]/.test(key)) {
+    throw new Error("ASAAS_SANDBOX_API_KEY ausente ou inválida");
+  }
   return {
     "Content-Type": "application/json",
+    "User-Agent": "CrossCollect/0.1 sandbox",
     access_token: key,
   };
 }
@@ -16,20 +23,34 @@ async function asaasRequest<T>(
   path: string,
   body?: unknown
 ): Promise<T> {
-  const res = await fetch(`${ASAAS_BASE_URL}${path}`, {
-    method,
-    headers: asaasHeaders(),
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  if (!res.ok) {
-    const errJson = await res.json().catch(() => null);
-    if (errJson?.errors?.length) {
-      const msgs = errJson.errors.map((e: { code: string; description: string }) => e.description).join("; ");
-      throw new Error(`Asaas: ${msgs}`);
-    }
-    throw new Error(`Asaas API error ${res.status}`);
+  // Validate configuration before allocating a timer or making any request.
+  const headers = asaasHeaders();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${ASAAS_SANDBOX_URL}${path}`, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: controller.signal,
+      redirect: "error",
+      cache: "no-store",
+    });
+    // Never propagate provider bodies: they can contain customer data or secrets.
+    if (!res.ok) throw new Error(`Asaas sandbox: HTTP ${res.status}`);
+    return await res.json() as T;
+  } catch (error) {
+    if (controller.signal.aborted) throw new Error("Asaas sandbox: tempo limite excedido");
+    if (error instanceof Error && /^Asaas sandbox: HTTP \d{3}$/.test(error.message)) throw error;
+    throw new Error("Asaas sandbox: falha na comunicação");
+  } finally {
+    clearTimeout(timeout);
   }
-  return res.json() as Promise<T>;
+}
+
+function paymentPath(paymentId: string): string {
+  if (!/^[a-zA-Z0-9_-]{1,100}$/.test(paymentId)) throw new Error("Identificador de pagamento inválido");
+  return `/payments/${paymentId}`;
 }
 
 export interface AsaasCustomer {
@@ -94,16 +115,16 @@ export async function createPayment(data: {
 }
 
 export async function getPixQrCode(paymentId: string): Promise<AsaasPixQrCode> {
-  return asaasRequest<AsaasPixQrCode>("GET", `/payments/${paymentId}/pixQrCode`);
+  return asaasRequest<AsaasPixQrCode>("GET", `${paymentPath(paymentId)}/pixQrCode`);
 }
 
 export async function getBoletoInfo(paymentId: string): Promise<AsaasBoletoInfo> {
   return asaasRequest<AsaasBoletoInfo>(
     "GET",
-    `/payments/${paymentId}/identificationField`
+    `${paymentPath(paymentId)}/identificationField`
   );
 }
 
 export async function getPaymentStatus(paymentId: string): Promise<AsaasPayment> {
-  return asaasRequest<AsaasPayment>("GET", `/payments/${paymentId}`);
+  return asaasRequest<AsaasPayment>("GET", paymentPath(paymentId));
 }

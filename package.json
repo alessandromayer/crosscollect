@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test:data-states": "node tests/ui/data-loading.cjs",
-    "test:metrics": "node --test tests/metrics/dashboard-metrics.cjs"
+    "test:metrics": "node --test tests/metrics/dashboard-metrics.cjs",
+    "test:payments": "node --test tests/webhook/disabled.cjs tests/asaas/sandbox.cjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
