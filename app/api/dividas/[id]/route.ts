@@ -5,17 +5,18 @@ import { rowToDebt, type DbDivida, type DbHistorico } from "@/lib/supabase-admin
 import { createServerClient } from "@/lib/supabase-server";
 
 // GET /api/dividas/[id]
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAuth();
   if (auth.error) return auth.error;
   try {
+    const { id } = await params;
     const credorId = await getOwnCredorId(auth.user!.id);
     if (!credorId) return NextResponse.json({ error: "Empresa não vinculada" }, { status: 403 });
     const db = createServerClient();
     const { data: divida, error } = await db
       .from("dividas")
       .select("*")
-      .eq("id", params.id)
+      .eq("id", id)
       .eq("credor_id", credorId)
       .single();
 
@@ -26,7 +27,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     const { data: hist } = await db
       .from("historico_acoes")
       .select("*")
-      .eq("divida_id", params.id)
+      .eq("divida_id", id)
       .order("criado_em", { ascending: false });
 
     return NextResponse.json(rowToDebt(divida as DbDivida, (hist as DbHistorico[]) || []));
@@ -37,10 +38,11 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 }
 
 // PATCH /api/dividas/[id] — administrative status or audit note only.
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAuth();
   if (auth.error) return auth.error;
   try {
+    const { id } = await params;
     const credorId = await getOwnCredorId(auth.user!.id);
     if (!credorId) return NextResponse.json({ error: "Empresa não vinculada" }, { status: 403 });
     const db = createServerClient();
@@ -60,7 +62,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     // The database commits the status and its audit events together.
     const { data: updated, error } = await db.rpc("update_debt_with_history", {
-      p_divida_id: params.id,
+      p_divida_id: id,
       p_status: body.status ?? null,
       p_nota: nota || null,
     }).single();
